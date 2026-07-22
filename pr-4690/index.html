@@ -1,138 +1,109 @@
-<title>Test Plan — PR #18</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4690</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0A0A0A;
-  --surface: #111111;
-  --surface-2: #1A1A1A;
-  --border: #222222;
-  --border-2: #2A2A2A;
-  --text: #EEEEEE;
-  --text-2: #999999;
-  --text-3: #555555;
-  --accent: #5B7FFF;
-  --accent-dim: rgba(91,127,255,0.1);
-  --pass: #3DD68C;
-  --pass-bg: rgba(61,214,140,0.08);
-  --pass-border: rgba(61,214,140,0.25);
-  --fail: #FF5C5C;
-  --fail-bg: rgba(255,92,92,0.08);
-  --fail-border: rgba(255,92,92,0.25);
-  --notrun-bg: rgba(255,255,255,0.04);
-  --notrun-border: #2A2A2A;
-  --notrun: #555555;
-  --mono: ui-monospace,'SF Mono',Consolas,monospace;
-  --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
-  --r: 6px;
-}
-html { font-size: 14px; -webkit-font-smoothing: antialiased; }
-body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.5; min-height: 100vh; }
-
-.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; gap: 14px; }
-.pr-tag { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(91,127,255,0.25); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.06em; }
-.h-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
-.h-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-.h-link { font-size: 11px; font-family: var(--mono); color: var(--accent); text-decoration: none; }
-.h-link:hover { text-decoration: underline; }
-.h-date { font-size: 11px; font-family: var(--mono); color: var(--text-3); }
-
-.main { max-width: 1200px; margin: 0 auto; padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
-
-.stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
-.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
-.stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
-.stat-num { font-size: 30px; font-weight: 700; font-family: var(--mono); line-height: 1; font-variant-numeric: tabular-nums; }
-.n-total { color: var(--text); }
-.n-notrun { color: var(--notrun); }
-.n-pass { color: var(--pass); }
-.n-fail { color: var(--fail); }
-
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
-.card-head { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--surface-2); }
-.card-head-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
-.card-hint { margin-left: auto; font-size: 11px; color: var(--text-3); font-family: var(--mono); }
-
-.impact-block { padding: 0 20px 4px; }
-.impact-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); padding: 14px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
-.impact-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.impact-row { display: grid; grid-template-columns: 190px 120px 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: start; }
-.impact-row:last-child { border-bottom: none; }
-.im-module { font-family: var(--mono); font-size: 11.5px; color: var(--accent); font-weight: 500; }
-.im-range { display: inline-block; font-family: var(--mono); font-size: 10.5px; color: var(--text-3); background: var(--surface-2); border: 1px solid var(--border-2); padding: 2px 8px; border-radius: 3px; }
-.im-reason { font-size: 12px; color: var(--text-2); line-height: 1.55; }
-.new-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.03); align-items: baseline; }
-.new-row:last-child { border-bottom: none; }
-.new-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 6px; }
-.new-text { font-size: 12px; color: var(--text-2); line-height: 1.55; }
-.new-module { font-family: var(--mono); font-size: 10.5px; color: var(--accent); }
-
-.scroll { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 860px; }
-th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--border); white-space: nowrap; }
-td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-2); vertical-align: top; line-height: 1.55; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(255,255,255,0.015); }
-.t-id { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); white-space: nowrap; }
-.t-mod { font-family: var(--mono); font-size: 10px; color: var(--accent); display: block; margin-bottom: 3px; font-weight: 500; }
-.t-surface { font-size: 12px; font-weight: 500; color: var(--text); }
-.steps ol { padding-left: 14px; }
-.steps li { margin-bottom: 2px; }
-.tag { font-family: var(--mono); font-size: 10.5px; background: var(--surface-2); border: 1px solid var(--border-2); padding: 1px 6px; border-radius: 3px; color: var(--text-2); }
-
-.status-cell { text-align: center; }
-.chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.07em; padding: 5px 12px; border-radius: 20px; cursor: pointer; user-select: none; border: 1px solid; transition: opacity 0.1s, transform 0.08s; white-space: nowrap; }
-.chip:hover { opacity: 0.85; }
-.chip:active { transform: scale(0.95); }
-.chip[data-s="notrun"] { background: var(--notrun-bg); color: var(--notrun); border-color: var(--notrun-border); }
-.chip[data-s="pass"] { background: var(--pass-bg); color: var(--pass); border-color: var(--pass-border); }
-.chip[data-s="fail"] { background: var(--fail-bg); color: var(--fail); border-color: var(--fail-border); }
-.chip::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
-
-.footer { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface-2); display: flex; justify-content: space-between; font-size: 10.5px; font-family: var(--mono); color: var(--text-3); }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
 </style>
-
+</head>
+<body>
 <div class="header">
-  <div class="pr-tag">PR #18</div>
-  <div class="h-title">Auth — Onboarding + Guardian Portal</div>
+  <div class="pr-tag">PR #4690</div>
+  <div class="h-title">Cc 31707 - Fix PowerSchool upload wizard step indicators and post-mapping redirect</div>
   <div class="h-right">
-    <a class="h-link" href="https://github.com/cialfo/core-pw-e2e-tests/pull/18" target="_blank">↗ core-pw-e2e-tests/pull/18</a>
-    <div class="h-date">2026-07-22 · feature/auth-onboarding-guardian-data-layer</div>
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4690" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4690</a>
+    <div class="h-date">2026-07-22 · CC-31707-powerschool-2</div>
   </div>
 </div>
-
 <div class="main">
-
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">11</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">11</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">9</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">9</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
-
   <div class="card">
     <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
     <div class="impact-block">
       <div class="impact-label">Regression</div>
-      <div class="impact-row">
-        <span class="im-module">Auth — Authentication</span>
-        <span class="im-range">TC-AUTH-001–006</span>
-        <span class="im-reason">New <span class="tag">acceptConditions</span> helper added to <span class="tag">createGuardian()</span> — session creation path changed</span>
-      </div>
-      <div class="impact-row">
-        <span class="im-module">Auth — Onboarding</span>
-        <span class="im-range">TC-ONBRD-001–003</span>
-        <span class="im-reason">New factories <span class="tag">setGraduationYear</span> <span class="tag">setOnboardingState</span> — grade-formula fix affects grade 10/11 boundary routing</span>
-      </div>
+      
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-010, 032–034, 047</span>
+          <span class="im-reason">isStep1Done/isStep2Active/isStep2Done converted from getter methods to plain properties with changed logic: Step 1 no longer treats an already-mapped integration (isUpdate) as done while still on the Configuration step; isStep2Done was removed entirely (Step 2 can no longer show a green/complete state); Step 2&#x27;s inactive background changed bg-neutral-light → bg-neutral-faint.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-010</span>
+          <span class="im-reason">Post-mapping-save redirect changed from /admin/uploads/logs → /admin/uploads. TC-BLKU-010&#x27;s expected result (&quot;navigates to History&quot;) no longer matches app behavior — needs correcting.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-021, 034</span>
+          <span class="im-reason">willUpdate seeding for a finished upload now reads upload.will_update (previously buggy/order-dependent self-reference), and the &quot;Update existing entries&quot; switch is now disabled once finished. TC-BLKU-034 claims the finished report view has &quot;no edit actions&quot; — this toggle was previously editable despite that claim; the fix should close that gap.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-006, 007, 016, 017, 021, 034</span>
+          <span class="im-reason">Wizard step 3/4/5 indicators (4-step, 5-step, and internal-step-remapped variants) now also render green/checked when upload?.finished is true, not only when the local step counter exceeds them.</span>
+        </div>
     </div>
-    <div class="impact-block">
-      <div class="impact-label">New Surfaces</div>
-      <div class="new-row">
-        <div class="new-dot"></div>
-        <div class="new-text"><span class="new-module">Auth — Guardian Portal</span> — Linked students view, sub-nav panel, profile edit, surveys list &amp; submission, student contacts — entirely new module introduced in this PR</div>
-      </div>
-    </div>
+    
   </div>
-
   <div class="card">
     <div class="card-head">
       <span class="card-head-title">Test Plan</span>
@@ -152,106 +123,87 @@ tr:hover td { background: rgba(255,255,255,0.015); }
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td class="t-id">TP-001</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Linked Students</span></td>
-            <td>Guardian with zero linked students</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Observe post-login destination</li></ol></div></td>
-            <td>Guardian signed out immediately; returned to sign-in page</td>
-            <td>Guardian with zero GuardianRelationship records</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-002</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Linked Students</span></td>
-            <td>Guardian linked to 2+ active students</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Observe landing URL and left nav</li></ol></div></td>
-            <td>Guardian lands on first student's home; left nav lists all linked students</td>
-            <td>Guardian with 2+ active student links</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-003</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Sub-nav</span></td>
-            <td>Guardian with one linked student; Dashboard/Bookmarks/Assessments guardian flags enabled</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Click linked student icon in left nav</li><li>Observe sub-nav panel</li></ol></div></td>
-            <td>Sub-nav slides open with correct student-scoped links; student name shown</td>
-            <td>Guardian + student; tenant guardian flags enabled</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-004</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Profile — View</span></td>
-            <td>Guardian with <span class="tag">guardian-profile-edit</span>; one with no picture, one with picture uploaded</td>
-            <td><div class="steps"><ol><li>Sign in as guardian (no pic) → open profile edit</li><li>Verify pre-filled; no picture shown</li><li>Repeat for guardian with picture</li></ol></div></td>
-            <td>Page loads with pre-filled details; picture shown only where uploaded</td>
-            <td>Two guardian accounts in different profile-picture states</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-005</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Profile — Access</span></td>
-            <td>Guardian without <span class="tag">guardian-profile-edit</span> permission (dual-role)</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Navigate directly to profile edit URL</li></ol></div></td>
-            <td>Access denied; user redirected away</td>
-            <td>Guardian with dual role (guardian + admin) via factory</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-006</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Profile — Edit</span></td>
-            <td>Guardian with <span class="tag">guardian-profile-edit</span> and editable fields</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Open profile edit page</li><li>Update fields and save</li></ol></div></td>
-            <td>Changes persist; profile reflects updated values on reload</td>
-            <td>Guardian with profile-edit permission</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-007</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Surveys — List</span></td>
-            <td>Guardian with assigned surveys in Not Started, In Progress, and Completed states</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Navigate to surveys list</li><li>Verify all three states visible</li></ol></div></td>
-            <td>Survey list renders; each row shows correct status badge</td>
-            <td>Guardian with surveys seeded in each of the three states</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-008</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Surveys — Submit</span></td>
-            <td>Guardian with an open survey containing at least one required question</td>
-            <td><div class="steps"><ol><li>Sign in as guardian</li><li>Open survey</li><li>Answer all questions and submit</li></ol></div></td>
-            <td>Submission succeeds; survey status updates to Completed</td>
-            <td>Guardian with an active, open survey</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-009</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Student Contacts</span></td>
-            <td>Counselor assigned to student with at least one existing guardian contact</td>
-            <td><div class="steps"><ol><li>Sign in as counselor</li><li>Open student profile → Contacts tab</li></ol></div></td>
-            <td>Contacts list loads; guardian contacts displayed with correct details</td>
-            <td>Counselor + student with guardian contact seeded</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-010</td>
-            <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Student Contacts</span></td>
-            <td>Counselor with <span class="tag">can_update</span> permission on student contacts</td>
-            <td><div class="steps"><ol><li>Sign in as counselor</li><li>Open student profile → Contacts tab</li><li>Add new guardian contact with a fresh email</li></ol></div></td>
-            <td>Contact created; appears in Contacts list</td>
-            <td>Counselor + student; unused email address for new contact</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-          <tr>
-            <td class="t-id">TP-011</td>
-            <td><span class="t-mod">Auth — Onboarding</span><span class="t-surface">Quiz</span></td>
-            <td>Unboarded student in grade 11+; onboarding questions enabled on tenant</td>
-            <td><div class="steps"><ol><li>Sign in as student</li><li>Complete all quiz sections</li><li>Reach result page</li></ol></div></td>
-            <td>Result page shows University Readiness level (1–8); student proceeds past onboarding</td>
-            <td>Student with grade 11+ graduation year; onboarding incomplete</td>
-            <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
-          </tr>
-        </tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Integrations Step Indicator — Step 1</span></td>
+          <td>Integration already has an existing field mapping (isUpdate=true)</td>
+          <td><div class="steps"><ol><li>Open the PowerSchool upload wizard&#x27;s Configuration step for an integration with an existing mapping</li></ol></div></td>
+          <td>Step 1 renders blue/active (&quot;1&quot;), never a green checkmark, while on the Configuration step</td>
+          <td>PowerSchool integration with a saved field mapping</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Integrations Step Indicator — Step 2</span></td>
+          <td>Same integration/page as TP-001</td>
+          <td><div class="steps"><ol><li>Observe the Step 2 badge on the Configuration step</li></ol></div></td>
+          <td>Plain &quot;2&quot; on neutral-faint background / dark label — never shows a green/complete state from this page</td>
+          <td>Same as TP-001</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Integrations Step 2b — Save &amp; Trigger Now redirect</span></td>
+          <td>On the field mapping step with required fields available</td>
+          <td><div class="steps"><ol><li>Map required fields</li><li>Click Save &amp; Trigger Now</li><li>Confirm the trigger dialog</li></ol></div></td>
+          <td>Redirects to /admin/uploads (not /admin/uploads/logs)</td>
+          <td>PowerSchool integration with unmapped required fields</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Integrations Step 2b — Mapping save payload</span></td>
+          <td>Field mapping spans 3+ field groups</td>
+          <td><div class="steps"><ol><li>Map fields across 3 or more field groups</li><li>Click Save</li></ol></div></td>
+          <td>Every field group in the upload_field_groups payload includes upload_id</td>
+          <td>PowerSchool integration with 3+ mappable field groups</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Wizard Step 4 — Update toggle (finished, will_update=true)</span></td>
+          <td>Finished upload with will_update=true and add_only=false</td>
+          <td><div class="steps"><ol><li>Open the finished upload&#x27;s report at Step 4</li></ol></div></td>
+          <td>&quot;Update existing entries&quot; toggle is ON and disabled</td>
+          <td>Finished upload record with will_update=true, add_only=false</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Wizard Step 4 — Update toggle (finished, will_update missing)</span></td>
+          <td>Finished upload with no will_update value set</td>
+          <td><div class="steps"><ol><li>Open the finished upload&#x27;s report at Step 4</li></ol></div></td>
+          <td>&quot;Update existing entries&quot; toggle is OFF (false) and disabled</td>
+          <td>Finished upload record with will_update unset</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Wizard Step Indicator Header (steps 3–5, finished)</span></td>
+          <td>Finished upload accessed via history/logs where the internal step counter may not exceed 4/5</td>
+          <td><div class="steps"><ol><li>Open a finished upload via History/Logs</li><li>Observe the step indicator header for steps 3 through the final step</li></ol></div></td>
+          <td>All steps up to the final one show a green checkmark, driven by upload.finished, not the local step counter</td>
+          <td>Finished upload accessible via History/Logs, including 4-step and 5-step wizard variants</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Integrations Step 2b — Field mapping hints copy</span></td>
+          <td>On the field mapping step</td>
+          <td><div class="steps"><ol><li>Open the Step 2b hints panel</li></ol></div></td>
+          <td>Hints 1–3 read as plain sentences with no leading &quot;1./2./3.&quot; prefix</td>
+          <td>None — static copy check</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Uploads Logs page — back button copy</span></td>
+          <td>On the Uploads Logs page</td>
+          <td><div class="steps"><ol><li>Read the back button label</li><li>Click the back button</li></ol></div></td>
+          <td>Button reads &quot;Back to Dashboard&quot; (was &quot;Back&quot;) and still navigates to the uploads dashboard</td>
+          <td>None — static copy + navigation check</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
       </table>
     </div>
     <div class="footer">
@@ -259,17 +211,17 @@ tr:hover td { background: rgba(255,255,255,0.015); }
       <span>qe-automation · staging.cialfo.sg</span>
     </div>
   </div>
-
 </div>
-
 <script>
-const C=['notrun','pass','fail'], L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
 function cycle(el){
   const n=C[(C.indexOf(el.dataset.s)+1)%3];
-  el.dataset.s=n; el.textContent=L[n];
-  const chips=[...document.querySelectorAll('.chip')];
-  document.getElementById('c-notrun').textContent=chips.filter(c=>c.dataset.s==='notrun').length;
-  document.getElementById('c-pass').textContent=chips.filter(c=>c.dataset.s==='pass').length;
-  document.getElementById('c-fail').textContent=chips.filter(c=>c.dataset.s==='fail').length;
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
 }
 </script>
+</body>
+</html>

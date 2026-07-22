@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">12</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">12</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">13</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">13</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -83,48 +83,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="impact-row">
           <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-005,012</span>
-          <span class="im-reason">Sticky nav bar click binding moved from a per-link (click) handler to nz-anchor&#x27;s single (nzClick) output, which now emits the clicked link&#x27;s href (e.g. &#x27;#courses&#x27;) for every tab instead of only the first</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-031</span>
-          <span class="im-reason">Best Opportunities First Fold card&#x27;s click handler changed from a direct navigateToCourses.emit() to onBestOpportunitiesClick(), which tracks then emits — navigation must still fire</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-042,008</span>
-          <span class="im-reason">openRepModal() in University Contact now fires a tracking call before opening the Representatives Modal — modal-open behavior must be unaffected</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-099</span>
-          <span class="im-reason">Regional Reps onMessageClick/onBookCallClick/onLinkedInClick signatures changed from taking a raw string (email/link) to taking the full representative object; a new onEmailClick tracks the mailto link click</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-056,009</span>
-          <span class="im-reason">Scattergram filter internals refactored from raw string literals to a SCATTERGRAM_FILTER_TYPE const map (dataSource/gradYear/citizenships/regions/courseSearch), touching onSelect, setSelectedData, resetFilter, and onSearch branch conditions</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-068</span>
-          <span class="im-reason">toggleCurrency() now fires a Switch Currency tracking call after recompute() — currency toggle behavior must be unaffected</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-076,077</span>
-          <span class="im-reason">openTunePreferences() in Recommended Courses now fires a tracking call before opening the tune-preferences drawer</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-098</span>
-          <span class="im-reason">Testimonials component gained an IntersectionObserver-driven impression tracker and new data-testimonial-id/data-testimonial-position attributes on each card; must not affect carousel scroll/nav behavior</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-032</span>
-          <span class="im-reason">Profile Feedback Card and University Header&#x27;s Share Feedback / Beta Menu / View Previous Version actions now fire tracking calls; the Beta Menu dropdown&#x27;s visibility binding changed from two-way [(nzVisible)] to one-way [nzVisible] + (nzVisibleChange) handler</span>
+          <span class="im-range">TC-UPROF-005, 009, 012, 031, 032, 042, 056, 068, 098, 099</span>
+          <span class="im-reason">All 31 changed files are under university-profile/** — nav bar, header beta menu, regional reps, scattergram filters/axis, currency toggle, testimonials, best-opportunities fold, and contact info are pre-existing tested surfaces.</span>
         </div>
     </div>
     
@@ -150,110 +110,119 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <tbody>
         <tr>
           <td class="t-id">TP-001</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Navigation Bar</span></td>
-          <td>Student is viewing a University Profile page with all sections present (Overview, Entry Requirements, Costs, Courses, Scholarships, Notes, Student Life)</td>
-          <td><div class="steps"><ol><li>Click each sticky-nav tab in turn: Overview, Entry Requirements, Costs, Courses, Scholarships, Notes, Student Life</li></ol></div></td>
-          <td>Every tab scrolls the page to its corresponding section (not just the first tab); no console errors from the new (nzClick) binding on nz-anchor</td>
-          <td>One university with all optional sections populated (course data, scholarships, notes, testimonials or regional reps)</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation</span></td>
+          <td>On a University Profile page with all sections present (Overview, Entry Requirements, Cost, Courses, Scholarships, Notes, Student Life).</td>
+          <td><div class="steps"><ol><li>Click each sticky nav tab in order, including tabs other than the first (e.g. Cost, Courses, Student Life).</li><li>Observe scroll position after each click.</li></ol></div></td>
+          <td>Every tab scrolls the page to its corresponding section — not only the first tab. (Previously the per-link click handler only ever bound to the first nz-link.)</td>
+          <td>Any university with data for all profile sections.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-002</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Navigation Bar / Courses tab</span></td>
-          <td>Student viewing a University Profile page</td>
-          <td><div class="steps"><ol><li>Click the Courses tab in the sticky nav</li></ol></div></td>
-          <td>Page scrolls to the Courses section (onNavBarClick strips the &#x27;#&#x27; prefix nz-anchor now passes and still resolves &#x27;courses&#x27; as the section id, still firing the courses-specific View Course tracking path)</td>
-          <td>University with course data so the Courses tab is present</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation — legacy anchor deep link</span></td>
+          <td>A University Profile URL with a legacy anchor hash (e.g. #courses).</td>
+          <td><div class="steps"><ol><li>Navigate directly to the University Profile URL with the anchor hash appended.</li><li>Observe initial scroll position.</li></ol></div></td>
+          <td>Page loads scrolled to the section matching the hash, consistent with pre-PR behavior.</td>
+          <td>Any university profile URL with a valid section hash.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-003</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Best Opportunities First Fold</span></td>
-          <td>Student in student context viewing a university with a matched course (firstCourse present)</td>
-          <td><div class="steps"><ol><li>Scroll to the Best Opportunities First Fold card</li><li>Click the card</li></ol></div></td>
-          <td>Clicking the card still navigates/emits navigateToCourses and scrolls/opens the Courses section as before — the new onBestOpportunitiesClick() wrapper must not swallow or delay the emit</td>
-          <td>Student with at least one matched course opportunity for the university</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu</span></td>
+          <td>University Profile header with the Beta tag visible.</td>
+          <td><div class="steps"><ol><li>Click the Beta tag to open the menu.</li><li>Click elsewhere to close it.</li><li>Re-open via click, then close/re-open using Enter and Space keys with the tag focused.</li></ol></div></td>
+          <td>Menu opens and closes correctly for every interaction path (click, Enter, Space); no stuck-open or stuck-closed state; Click Beta Menu fires once on open, not on close or re-emitted opens.</td>
+          <td>None — any University Profile page.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-004</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Contact Information card</span></td>
-          <td>University has one or more regional representatives configured</td>
-          <td><div class="steps"><ol><li>Click &#x27;View all representatives&#x27; on the Contact Information card</li></ol></div></td>
-          <td>Representatives Modal opens and lists all visible representatives, unchanged from prior behavior aside from the new tracking call</td>
-          <td>University with at least 2 regional representatives, at least one hidden</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu (Share Feedback / View Previous Version)</span></td>
+          <td>Beta Menu open.</td>
+          <td><div class="steps"><ol><li>Click &quot;Share Feedback&quot;.</li><li>Re-open the menu and click &quot;View Previous Version&quot;.</li></ol></div></td>
+          <td>Share Feedback opens the typeform in a new tab; View Previous Version deep-links to the legacy profile for the current university/student.</td>
+          <td>A student context with a valid university slug.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-005</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Regional Representatives carousel</span></td>
-          <td>University has a regional representative with email, phone, LinkedIn, and calendar link populated</td>
-          <td><div class="steps"><ol><li>Open the active representative&#x27;s contact panel</li><li>Click the email link</li><li>Click Message</li><li>Click Book a Call</li><li>Click the LinkedIn row</li></ol></div></td>
-          <td>Email link still navigates via mailto (browser-level), Message sets window.location.href to mailto:&lt;email&gt;, Book a Call opens the calendar link in a new tab, LinkedIn opens the LinkedIn URL in a new tab — all four now take the full rep object internally but external behavior is unchanged</td>
-          <td>Regional representative fixture with email, phone, linkedin, and calendar_link all set</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Regional Representatives</span></td>
+          <td>A university with regional representatives that have email, phone, LinkedIn, and calendar link populated.</td>
+          <td><div class="steps"><ol><li>On the active rep card, click the email address.</li><li>Click &quot;Message&quot;.</li><li>Click &quot;Book a call&quot; (if calendar_link present).</li><li>Click the LinkedIn row.</li></ol></div></td>
+          <td>Message sets window.location to the correct rep&#x27;s mailto link; Book a Call and LinkedIn open the correct rep&#x27;s calendar/LinkedIn URL in a new tab — using the newly-passed rep object, not a stale/wrong rep.</td>
+          <td>University with 2+ regional reps, so a mismatch between the active card and tracked rep would be visible.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-006</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Scattergram Filters</span></td>
-          <td>University Profile Scattergram section loaded with filter data (grad years, citizenships, regions, data source, course/major)</td>
-          <td><div class="steps"><ol><li>Select a Data Source option</li><li>Select one or more Grad Years (multi-select)</li><li>Select one or more Citizenships (multi-select)</li><li>Select one or more Regions (multi-select)</li><li>Type a Course/Major search term and commit it (convertToTag)</li><li>Click Reset on each filter</li></ol></div></td>
-          <td>All filter selection, multi-select toggling, course/major tag conversion, and reset behavior is unchanged after the raw-string-to-SCATTERGRAM_FILTER_TYPE-constant refactor; localStorage persistence and updateScattergramPoints emission still fire on dataSource/courseSearch reset as before</td>
-          <td>Scattergram filters payload with populated data_source, grad years, citizenships, and regions options</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Filters</span></td>
+          <td>University with scattergram data and filter options for grad year, region, citizenship, and course/major.</td>
+          <td><div class="steps"><ol><li>Apply a Grad Year filter.</li><li>Apply a Region filter.</li><li>Apply a Citizenship filter.</li><li>Enter a value in Course/Major search and commit it (blur or Enter).</li></ol></div></td>
+          <td>Each filter still updates the scattergram&#x27;s plotted points and persists to localStorage as before the refactor from string literals to the SCATTERGRAM_FILTER_TYPE constant map.</td>
+          <td>University with scattergram entries across multiple grad years/regions/citizenships.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-007</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Scattergram Axis Switcher</span></td>
-          <td>Scattergram v2 loaded with selectable X/Y axis options</td>
-          <td><div class="steps"><ol><li>Change the X axis via onAxisChange</li><li>Use swapAxis to swap X and Y axes</li></ol></div></td>
-          <td>Axis change and swap still update the chart and user settings correctly (filterAxisListBasedOnSelection, updateUserScattergramSettings) alongside the new trackAxisSwitch() call</td>
-          <td>University with scattergram outcome data for at least 2 axis options</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Axis Switch</span></td>
+          <td>Scattergram visible with default axes.</td>
+          <td><div class="steps"><ol><li>Change the X axis selector to a different test type.</li><li>Change the Y axis selector to a different test type.</li></ol></div></td>
+          <td>Chart redraws with the newly selected axes on both changes.</td>
+          <td>University with data for at least 2 distinct test types on each axis.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-008</td>
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Cost &amp; Financial Aid — Currency Toggle</span></td>
-          <td>University has cost data in a currency different from the student&#x27;s profile currency, with a valid conversion rate available</td>
-          <td><div class="steps"><ol><li>Click the currency toggle to switch to Profile Currency</li><li>Click it again to switch back to University Currency</li></ol></div></td>
-          <td>Displayed costs still recompute and switch currency correctly on both toggles; tracking fires without blocking or delaying recompute()</td>
-          <td>University cost data with a differing currency and a valid CurrencyConversionService.convert() result</td>
+          <td>University with cost data and a valid currency conversion available (profile currency differs from university currency).</td>
+          <td><div class="steps"><ol><li>Toggle currency from University Currency to Profile Currency.</li><li>Toggle back to University Currency.</li></ol></div></td>
+          <td>Displayed cost figures switch correctly between currencies both directions.</td>
+          <td>Student profile currency different from the university&#x27;s local currency, with a valid conversion rate.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-009</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Recommended Courses — Tune Preferences</span></td>
-          <td>Student viewing Recommended Courses panel with saved preferences</td>
-          <td><div class="steps"><ol><li>Click &#x27;Tune&#x27; to open the preference-questions drawer</li><li>Change a preference and close the drawer</li></ol></div></td>
-          <td>Drawer opens and reload-on-close behavior is unchanged after adding the tracking call in openTunePreferences()</td>
-          <td>Student with existing recommended-course preferences</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel &amp; View Impressions</span></td>
+          <td>University with 3+ testimonials, at least one fully out of the initial viewport.</td>
+          <td><div class="steps"><ol><li>Load the page and observe the page renders without a JS/console error.</li><li>Scroll the testimonials carousel forward and backward using its nav controls, slowly enough to pass multiple cards through the viewport.</li><li>Switch to a different university profile (same-route uni→uni navigation) and repeat.</li></ol></div></td>
+          <td>The page compiles and renders (see blocker note below) — carousel scroll/nav behavior is unchanged by the new data-testimonial-id/position attributes and IntersectionObserver, no visual jank, no broken prev/next state, and impressions reset per university switch without re-firing for already-seen cards.</td>
+          <td>University with at least 3 Contentful testimonials; a second university to switch to for the reset check.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-010</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Testimonials Carousel</span></td>
-          <td>University has 3+ Contentful testimonials</td>
-          <td><div class="steps"><ol><li>Load the University Profile page and scroll the testimonials carousel using prev/next controls</li><li>Scroll a testimonial card into and out of view within the carousel track</li></ol></div></td>
-          <td>Carousel navigation (prev/next, trackById) is unaffected by the new data-testimonial-id/data-testimonial-position attributes and the IntersectionObserver impression tracker; no duplicate or missing impressions when scrolling back and forth over the same card</td>
-          <td>University with 3 or more testimonials, distinct ids</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Best Opportunities First Fold</span></td>
+          <td>Student context, Grade 12, university with a matched course (firstCourse set).</td>
+          <td><div class="steps"><ol><li>Click the Best Opportunities card.</li></ol></div></td>
+          <td>Navigates to / scrolls to the Courses &amp; Majors section, same as before the onBestOpportunitiesClick() wrapper was introduced.</td>
+          <td>Student with course preferences that produce a matched first course.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-011</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">University Header — Beta Menu</span></td>
-          <td>Student viewing University Profile header with the Beta tag/menu visible</td>
-          <td><div class="steps"><ol><li>Click the Beta Menu tag to open the dropdown</li><li>Press Enter on the Beta Menu tag while focused (with menu closed)</li><li>Press Space on the Beta Menu tag while focused (with menu closed)</li><li>Click outside the dropdown to close it</li></ol></div></td>
-          <td>Dropdown still opens/closes correctly via mouse click, Enter, and Space now that nzVisible is one-way bound through onBetaMenuVisibleChange() instead of the previous two-way [(nzVisible)] binding — no case where the menu gets stuck open or fails to open</td>
-          <td>None — static header interaction</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Contact Information</span></td>
+          <td>University with contact info and representatives configured.</td>
+          <td><div class="steps"><ol><li>Click &quot;View all representatives&quot; on the Contact Information card.</li></ol></div></td>
+          <td>Representatives Modal opens and lists the university&#x27;s representatives.</td>
+          <td>University with at least 1 representative.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-012</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">University Header — Share Feedback / View Previous Version</span></td>
-          <td>Student viewing University Profile header with the Beta Menu open</td>
-          <td><div class="steps"><ol><li>Click &#x27;Share Feedback&#x27; in the Beta Menu</li><li>Reopen the Beta Menu and click &#x27;View Previous Version&#x27;</li></ol></div></td>
-          <td>Share Feedback still opens the Typeform URL in a new tab; View Previous Version still deep-links to the legacy profile route with the correct student/counselor path — both now fire tracking calls alongside the existing navigation</td>
-          <td>Student context with a valid studentId and universitySlug</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Fold-Reach Scroll Tracking</span></td>
+          <td>University Profile page with all folds present, including Student Life.</td>
+          <td><div class="steps"><ol><li>Scroll down through every fold in order (First Fold, Overview, Entry Requirements, Cost, Courses, Scholarships, Student Life, Notes).</li><li>Scroll back up past an already-viewed fold, then down again.</li></ol></div></td>
+          <td>Fold Viewed fires once per fold on first reaching 50% visibility, with a monotonically non-decreasing max_fold_reached; re-entering an already-viewed fold does not re-fire it.</td>
+          <td>University with content for every fold section (so none are hidden by *ngIf).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-013</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">BLOCKER — build/compile break in uni-testimonials.component.ts</span></td>
+          <td>PR #4689 at current head (commit c97bf74527).</td>
+          <td><div class="steps"><ol><li>Run `tsc`/the app build against the branch, or load any University Profile page with testimonials in the running app.</li></ol></div></td>
+          <td>This must fail today: `ngOnChanges()` in uni-testimonials.component.ts is missing its closing brace (introduced by the Copilot autofix commit that wrapped the setTimeout in a null-check), so `ngAfterViewInit()` and `ngOnDestroy()` end up nested inside `ngOnChanges()` — a TypeScript syntax/compile error. PR&#x27;s own `eslint` check is already failing and `test`/`baseline` jobs are stuck pending as of this diff. Every other TC in this plan is blocked until this brace is fixed and the branch actually compiles.</td>
+          <td>None — this is a static/compile-time defect, not a data-dependent scenario.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

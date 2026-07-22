@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4697</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4697</div>
+  <div class="h-title">MAN-947: core-web dismiss action for Activity Feed items</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4697" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4697</a>
+    <div class="h-date">2026-07-22 · agents/MAN-947-core-web-dismiss-action-for-activity-feed-items</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">9</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">9</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Communications — Notifications</span>
+          <span class="im-range">TC-NOTIF-007, 011–020, 034–044</span>
+          <span class="im-reason">Activity Feed page (/feeds) sidebar+selection logic changed: dismissFeed output wired through ActivityFeedsPageComponent.onDismissFeed, which clears selectedFeed and re-runs initializeFeeds() when the dismissed item was selected. Also depends on ActivityFeedsService.groupActivitiesByWeek(), extracted from inline code with no intended behavior change — week grouping/sorting for the sidebar list must be re-verified.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Activity Reports</span>
+          <span class="im-range">TC-ACTR-001, 005–009</span>
+          <span class="im-reason">Same /feeds page and ActivityFeedsService as above — selected-feed header state and feed list contents are affected by the new dismiss flow and the week-grouping refactor.</span>
+        </div>
+    </div>
+    
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed sidebar — dismiss button</span></td>
+          <td>Counselor is on /feeds with at least one feed item loaded in the sidebar</td>
+          <td><div class="steps"><ol><li>Hover over a feed item row in the sidebar</li><li>Observe the dismiss (×) icon button at the end of the row</li></ol></div></td>
+          <td>The dismiss button is hidden by default and appears only on hover (group-hover), positioned at the row&#x27;s trailing edge with an accessible aria-label (&#x27;common.dismiss&#x27;)</td>
+          <td>1 counselor account, 1 activity feed item</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed sidebar — dismiss action</span></td>
+          <td>Counselor is on /feeds with a non-selected feed item visible in the sidebar</td>
+          <td><div class="steps"><ol><li>Hover the feed item row</li><li>Click the dismiss button</li></ol></div></td>
+          <td>PUT /v4/feeds/activities/:id/dismiss fires; the item is removed from the sidebar list; the click does not select the row or navigate to its detail (event propagation is stopped) — selectedFeed and the right pane remain unchanged</td>
+          <td>1 counselor account, 2+ activity feed items (one selected, one target for dismiss)</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss non-selected item</span></td>
+          <td>Counselor has a feed item A selected; feed item B is visible but not selected</td>
+          <td><div class="steps"><ol><li>Dismiss feed item B</li></ol></div></td>
+          <td>Selection is unchanged — feed A remains selected and its detail table/header stay as-is; ActivityFeedsService.selectActivityFeed is not called again</td>
+          <td>1 counselor account, 2 activity feed items</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss currently-selected item</span></td>
+          <td>Counselor has a feed item selected and its detail table loaded</td>
+          <td><div class="steps"><ol><li>Dismiss the currently selected feed item</li></ol></div></td>
+          <td>selectedFeed and selectedFeedId are cleared, the feed list re-initializes (initializeFeeds), and a new first feed is auto-selected per existing page-load selection behavior — no stale detail table is left showing the dismissed item</td>
+          <td>1 counselor account, 2+ activity feed items</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss tracking</span></td>
+          <td>Counselor dismisses a feed item of a known view/type</td>
+          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Inspect the tracking call</li></ol></div></td>
+          <td>trackEvent fires with event name &#x27;Dismiss activity feed item&#x27; (ACTIVITY_FEEDS_EVENT_NAMES.dismissActivity) and feedType property set to the dismissed feed&#x27;s view</td>
+          <td>1 counselor account, 1 activity feed item with a known view type</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss persistence</span></td>
+          <td>Counselor dismisses a feed item</td>
+          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Reload /feeds</li><li>Scroll/paginate through the sidebar</li></ol></div></td>
+          <td>The dismissed item does not reappear on reload or on subsequent pagination — co-api excludes dismissed=true rows from ActivityFeeds::List#base_query for this counselor</td>
+          <td>1 counselor account, 1 activity feed item</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss cross-counselor isolation (security)</span></td>
+          <td>Two counselor accounts (A, B) each with their own activity feed items</td>
+          <td><div class="steps"><ol><li>As counselor A, call PUT /v4/feeds/activities/:id/dismiss with counselor B&#x27;s feed item id</li></ol></div></td>
+          <td>Request is denied (the endpoint scopes to current_user&#x27;s own ActivityFeed rows, per the IDOR fix in MAN-946) — counselor B&#x27;s item remains undismissed. Not reachable via the FE UI directly (IDs aren&#x27;t cross-counselor-navigable), so this is an API-level regression check rather than a UI flow</td>
+          <td>2 counselor accounts, each with 1 activity feed item; direct API call capability</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Counselor Dashboard</span><span class="t-surface">Counselor Dashboard — Activity Feed card (regression, confirm unaffected)</span></td>
+          <td>Counselor is on the Counselor Dashboard with the Activity Feed summary card populated</td>
+          <td><div class="steps"><ol><li>Hover over a feed item row inside the dashboard card widget</li></ol></div></td>
+          <td>No dismiss button appears — the card renders app-activity-feed-list with forActivityPage left at its default false, so the dismiss button&#x27;s containing block (&#x27;*ngIf=&quot;forActivityPage&quot;&#x27;) never renders here. Confirms this PR&#x27;s change is scoped to the full /feeds page only</td>
+          <td>1 counselor account, 1 activity feed item</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Activity Feed sidebar — week grouping refactor sanity</span></td>
+          <td>Counselor has activity feed items spanning multiple calendar weeks</td>
+          <td><div class="steps"><ol><li>Load /feeds</li><li>Inspect week-range group headers and item ordering in the sidebar</li></ol></div></td>
+          <td>Week groups are keyed and formatted identically to pre-refactor behavior (&#x27;d LLL, yyyy - d LLL, yyyy&#x27;), sorted latest-week-first, with the same items under each group — the extraction of groupActivitiesByWeek() introduced no grouping/sorting regression</td>
+          <td>1 counselor account, activity feed items across 3+ distinct weeks</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

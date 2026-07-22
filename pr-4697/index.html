@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">9</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">9</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">10</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">10</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -82,17 +82,30 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="impact-label">Regression</div>
       
         <div class="impact-row">
-          <span class="im-module">Communications — Notifications</span>
-          <span class="im-range">TC-NOTIF-007, 011–020, 034–044</span>
-          <span class="im-reason">Activity Feed page (/feeds) sidebar+selection logic changed: dismissFeed output wired through ActivityFeedsPageComponent.onDismissFeed, which clears selectedFeed and re-runs initializeFeeds() when the dismissed item was selected. Also depends on ActivityFeedsService.groupActivitiesByWeek(), extracted from inline code with no intended behavior change — week grouping/sorting for the sidebar list must be re-verified.</span>
+          <span class="im-module">Dashboards &amp; Reports — Activity Reports</span>
+          <span class="im-range">TC-ACTR-001–021</span>
+          <span class="im-reason">Activity Feed page is this module&#x27;s entire surface; the dismiss button and click-stopPropagation logic sit inside the same feed rows exercised by selection, CTA, and infinite-scroll TCs — verify none regressed.</span>
         </div>
         <div class="impact-row">
-          <span class="im-module">Dashboards &amp; Reports — Activity Reports</span>
-          <span class="im-range">TC-ACTR-001, 005–009</span>
-          <span class="im-reason">Same /feeds page and ActivityFeedsService as above — selected-feed header state and feed list contents are affected by the new dismiss flow and the week-grouping refactor.</span>
+          <span class="im-module">Communications — Notifications</span>
+          <span class="im-range">TC-NOTIF-001–044</span>
+          <span class="im-reason">Same /feeds route and ActivityFeedsService documented under this module&#x27;s activity-feeds.md doc. Week-grouping logic was extracted into groupActivitiesByWeek() (stated as behavior-preserving in the diff) — confirm list rendering/sorting/filtering still pass (TC-NOTIF-011–020, 034–040, 043–044).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Counselor Dashboard</span>
+          <span class="im-range">TC-CDASH-041, 062, 063</span>
+          <span class="im-reason">activity-feed-list component is shared with the dashboard&#x27;s compact Activity Feed card; confirm the added `group` CSS class and the new dismiss button (scoped to *ngIf=&quot;forActivityPage&quot;) introduce no visual/behavioral change to the card&#x27;s non-activity-page rendering path.</span>
         </div>
     </div>
     
+    <div class="impact-block">
+      <div class="impact-label">New Surfaces</div>
+      
+        <div class="new-row">
+          <div class="new-dot"></div>
+          <div class="new-text"><span class="new-module">Dashboards &amp; Reports — Activity Reports</span> — Per-row Dismiss (×) action on Activity Feed sidebar items: hover/focus-revealed icon, PUT /v4/feeds/activities/:id/dismiss, optimistic local removal + urgent-count decrement, and selection fallback to the first item of the refreshed list when the dismissed item was the one selected. No existing TC module covers dismissal on this page yet.</div>
+        </div>
+    </div>
   </div>
   <div class="card">
     <div class="card-head">
@@ -115,83 +128,92 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <tbody>
         <tr>
           <td class="t-id">TP-001</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed sidebar — dismiss button</span></td>
-          <td>Counselor is on /feeds with at least one feed item loaded in the sidebar</td>
-          <td><div class="steps"><ol><li>Hover over a feed item row in the sidebar</li><li>Observe the dismiss (×) icon button at the end of the row</li></ol></div></td>
-          <td>The dismiss button is hidden by default and appears only on hover (group-hover), positioned at the row&#x27;s trailing edge with an accessible aria-label (&#x27;common.dismiss&#x27;)</td>
-          <td>1 counselor account, 1 activity feed item</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — non-selected item</span></td>
+          <td>Counselor is on /feeds with 2+ pending feed items loaded; the item to dismiss is not the currently selected one.</td>
+          <td><div class="steps"><ol><li>Hover over a feed row that is not the selected feed</li><li>Click the × (Dismiss) icon that appears on hover</li><li>Observe the sidebar list and the currently selected feed&#x27;s detail pane</li></ol></div></td>
+          <td>PUT v4/feeds/activities/:id/dismiss fires for the hovered item&#x27;s id; the row disappears from the sidebar immediately with no full page reload; the previously selected feed and its detail pane remain unchanged.</td>
+          <td>2+ ActivityFeed rows for the acting counselor, at least one with a deadline.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-002</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed sidebar — dismiss action</span></td>
-          <td>Counselor is on /feeds with a non-selected feed item visible in the sidebar</td>
-          <td><div class="steps"><ol><li>Hover the feed item row</li><li>Click the dismiss button</li></ol></div></td>
-          <td>PUT /v4/feeds/activities/:id/dismiss fires; the item is removed from the sidebar list; the click does not select the row or navigate to its detail (event propagation is stopped) — selectedFeed and the right pane remain unchanged</td>
-          <td>1 counselor account, 2+ activity feed items (one selected, one target for dismiss)</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — currently-selected item</span></td>
+          <td>Counselor has a feed item selected in the detail pane; 3+ other feed items exist spanning 2+ weeks.</td>
+          <td><div class="steps"><ol><li>Select a feed item that is not the first row in the sidebar</li><li>Hover the selected row and click its Dismiss (×) icon</li><li>Observe which feed becomes selected afterward</li></ol></div></td>
+          <td>The dismissed item is removed from the sidebar; the detail pane switches to feeds[0].activities[0] of the refreshed (re-grouped, week-sorted) list — the first item overall, not necessarily the row adjacent to the dismissed one. No error is thrown.</td>
+          <td>3+ ActivityFeed rows spanning at least 2 different weeks so the post-refresh &#x27;first&#x27; item is unambiguous.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-003</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss non-selected item</span></td>
-          <td>Counselor has a feed item A selected; feed item B is visible but not selected</td>
-          <td><div class="steps"><ol><li>Dismiss feed item B</li></ol></div></td>
-          <td>Selection is unchanged — feed A remains selected and its detail table/header stay as-is; ActivityFeedsService.selectActivityFeed is not called again</td>
-          <td>1 counselor account, 2 activity feed items</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — last remaining item</span></td>
+          <td>Counselor&#x27;s feed list contains exactly one pending item, auto-selected on load.</td>
+          <td><div class="steps"><ol><li>Dismiss the single feed item</li><li>Observe the sidebar and detail pane</li></ol></div></td>
+          <td>Sidebar shows the &#x27;No activity feed available&#x27; empty state; detail pane clears without error (initializeFeeds&#x27; feeds.length === 0 guard short-circuits); no residual content from the dismissed item.</td>
+          <td>Exactly one ActivityFeed row for the counselor.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-004</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss currently-selected item</span></td>
-          <td>Counselor has a feed item selected and its detail table loaded</td>
-          <td><div class="steps"><ol><li>Dismiss the currently selected feed item</li></ol></div></td>
-          <td>selectedFeed and selectedFeedId are cleared, the feed list re-initializes (initializeFeeds), and a new first feed is auto-selected per existing page-load selection behavior — no stale detail table is left showing the dismissed item</td>
-          <td>1 counselor account, 2+ activity feed items</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — urgent (deadline) count</span></td>
+          <td>Counselor has an Urgent badge count &gt; 0 from feeds with deadlines, plus at least one feed without a deadline.</td>
+          <td><div class="steps"><ol><li>Note the current Urgent button badge count</li><li>Dismiss a feed item that has a deadline</li><li>Verify the badge decrements by 1</li><li>Dismiss a feed item without a deadline</li><li>Verify the badge count is unchanged</li></ol></div></td>
+          <td>Badge count decreases by exactly 1 only when the dismissed item had a deadline; no change when it did not. Count never goes below 0.</td>
+          <td>One ActivityFeed row with a deadline, one without, for the same counselor.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-005</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss tracking</span></td>
-          <td>Counselor dismisses a feed item of a known view/type</td>
-          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Inspect the tracking call</li></ol></div></td>
-          <td>trackEvent fires with event name &#x27;Dismiss activity feed item&#x27; (ACTIVITY_FEEDS_EVENT_NAMES.dismissActivity) and feedType property set to the dismissed feed&#x27;s view</td>
-          <td>1 counselor account, 1 activity feed item with a known view type</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — persistence across reload/pagination</span></td>
+          <td>A feed item has just been dismissed.</td>
+          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Reload the /feeds page</li><li>Scroll to trigger infinite-scroll loading of subsequent pages</li></ol></div></td>
+          <td>The dismissed item never resurfaces — co-api&#x27;s list query permanently excludes dismissed: true rows for that counselor and there is no undo endpoint; confirms the optimistic client-side removal matches server truth.</td>
+          <td>Same as TP-001; requires a real reload, not just observing client-side subscription state.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-006</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss persistence</span></td>
-          <td>Counselor dismisses a feed item</td>
-          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Reload /feeds</li><li>Scroll/paginate through the sidebar</li></ol></div></td>
-          <td>The dismissed item does not reappear on reload or on subsequent pagination — co-api excludes dismissed=true rows from ActivityFeeds::List#base_query for this counselor</td>
-          <td>1 counselor account, 1 activity feed item</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — cross-counselor authorization</span></td>
+          <td>Two counselor accounts on the same tenant, each with their own ActivityFeed row.</td>
+          <td><div class="steps"><ol><li>As Counselor A, call PUT v4/feeds/activities/:id/dismiss directly with Counselor B&#x27;s activity_feed id (the UI never exposes another counselor&#x27;s id)</li><li>Observe the response and Counselor B&#x27;s feed list afterward</li></ol></div></td>
+          <td>Request returns 404 — set_own_activity_feed scopes the lookup to ActivityFeed.where(counselor_id: current_user.id); Counselor B&#x27;s row is untouched and not dismissed.</td>
+          <td>Two counselor accounts, each with a distinct ActivityFeed row, same tenant.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-007</td>
-          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Activity Feed — dismiss cross-counselor isolation (security)</span></td>
-          <td>Two counselor accounts (A, B) each with their own activity feed items</td>
-          <td><div class="steps"><ol><li>As counselor A, call PUT /v4/feeds/activities/:id/dismiss with counselor B&#x27;s feed item id</li></ol></div></td>
-          <td>Request is denied (the endpoint scopes to current_user&#x27;s own ActivityFeed rows, per the IDOR fix in MAN-946) — counselor B&#x27;s item remains undismissed. Not reachable via the FE UI directly (IDs aren&#x27;t cross-counselor-navigable), so this is an API-level regression check rather than a UI flow</td>
-          <td>2 counselor accounts, each with 1 activity feed item; direct API call capability</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss icon visibility</span></td>
+          <td>Counselor is on /feeds with the sidebar populated.</td>
+          <td><div class="steps"><ol><li>Observe a feed row without hovering or focusing it</li><li>Hover over the row</li><li>Tab to focus the row&#x27;s dismiss button via keyboard</li></ol></div></td>
+          <td>The × icon is invisible (opacity-0) at rest, appears on group-hover, and also appears on keyboard focus (focus:opacity-100) so keyboard-only users can discover and activate it.</td>
+          <td>N/A — existing feed list.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-008</td>
-          <td><span class="t-mod">Dashboards &amp; Reports — Counselor Dashboard</span><span class="t-surface">Counselor Dashboard — Activity Feed card (regression, confirm unaffected)</span></td>
-          <td>Counselor is on the Counselor Dashboard with the Activity Feed summary card populated</td>
-          <td><div class="steps"><ol><li>Hover over a feed item row inside the dashboard card widget</li></ol></div></td>
-          <td>No dismiss button appears — the card renders app-activity-feed-list with forActivityPage left at its default false, so the dismiss button&#x27;s containing block (&#x27;*ngIf=&quot;forActivityPage&quot;&#x27;) never renders here. Confirms this PR&#x27;s change is scoped to the full /feeds page only</td>
-          <td>1 counselor account, 1 activity feed item</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss click isolation</span></td>
+          <td>Counselor is viewing the sidebar with a feed item currently selected.</td>
+          <td><div class="steps"><ol><li>Hover a different (non-selected) feed row</li><li>Click directly on its Dismiss (×) icon</li></ol></div></td>
+          <td>Only the dismiss action fires (item removed); the row&#x27;s own selection click handler does NOT also fire, since the dismiss button calls $event.stopPropagation() — the previously selected feed/detail pane stays unchanged.</td>
+          <td>2+ ActivityFeed rows.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-009</td>
-          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Activity Feed sidebar — week grouping refactor sanity</span></td>
-          <td>Counselor has activity feed items spanning multiple calendar weeks</td>
-          <td><div class="steps"><ol><li>Load /feeds</li><li>Inspect week-range group headers and item ordering in the sidebar</li></ol></div></td>
-          <td>Week groups are keyed and formatted identically to pre-refactor behavior (&#x27;d LLL, yyyy - d LLL, yyyy&#x27;), sorted latest-week-first, with the same items under each group — the extraction of groupActivitiesByWeek() introduced no grouping/sorting regression</td>
-          <td>1 counselor account, activity feed items across 3+ distinct weeks</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Counselor Dashboard</span><span class="t-surface">Dashboard card — no dismiss action</span></td>
+          <td>Counselor is on the Counselor Dashboard with the Activity Feed card populated.</td>
+          <td><div class="steps"><ol><li>Hover over an item in the dashboard&#x27;s compact Activity Feed card</li><li>Observe whether a Dismiss (×) icon appears</li></ol></div></td>
+          <td>No dismiss icon appears — the button only renders inside the *ngIf=&quot;forActivityPage&quot; template branch, and the dashboard card uses the shared component with forActivityPage unset and no (dismissFeed) binding; explicitly out of scope per the PR description.</td>
+          <td>N/A — existing dashboard card feed data.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-010</td>
+          <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Full-page regression — grouping/sort/selection</span></td>
+          <td>Counselor has feed items spanning multiple weeks with mixed statuses.</td>
+          <td><div class="steps"><ol><li>Load /feeds</li><li>Verify week-group headers and sort order (latest week first)</li><li>Click a feed item and verify it becomes selected and its detail loads</li><li>Apply the Urgent and Activity Type filters and verify the list still updates correctly</li></ol></div></td>
+          <td>Grouping, sorting, filtering, and selection behave identically to pre-PR — groupActivitiesByWeek() is a pure extraction of pre-existing logic with no behavior change; existing TC-NOTIF-011–020/034/035/038–040 and TC-ACTR assertions should pass unmodified.</td>
+          <td>Multi-week feed dataset per existing TC data requirements.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

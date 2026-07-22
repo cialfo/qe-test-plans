@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4694</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4694</div>
+  <div class="h-title">Cc 31712</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4694" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4694</a>
+    <div class="h-date">2026-07-22 · CC-31712</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">8</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">8</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-029–030</span>
+          <span class="im-reason">Fit Overview Tuition card (buildTuitionCard/getAnnualTuitionText) now prefers tuition_fee_range (local currency) over tuition_fee_range_usd and renders the university&#x27;s real currency code instead of a hardcoded &#x27;USD&#x27; suffix. Both TCs assume USD-only display and need re-verification against universities with local-currency tuition data.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-068, TC-UPROF-070, TC-UPROF-106</span>
+          <span class="im-reason">BUDGET_MAX_VALUES and the currency-symbol map were extracted out of UniversityCostComponent into the shared constants.ts (now also consumed by FitOverviewComponent). Pure refactor with no logic change inside university-cost.component.ts itself, but shared-constant changes carry regression risk for Cost &amp; Financial Aid&#x27;s Budget Fit indicator and currency toggle if the two consumers&#x27; lookups diverge.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-076</span>
+          <span class="im-reason">uni-recommended-courses.component.html adds truncate + nz-tooltip to the course name paragraph. The existing &#x27;Recommended Courses panel&#x27; TC should verify long course names truncate correctly and the full name shows on hover instead of wrapping/overflowing.</span>
+        </div>
+    </div>
+    
+    <div class="impact-block">
+      <div class="impact-label">New Surfaces</div>
+      
+        <div class="new-row">
+          <div class="new-dot"></div>
+          <div class="new-text"><span class="new-module">Discovery &amp; Research — University Profile</span> — Fit Overview&#x27;s budget line (&#x27;Your budget: Up to X&#x27;) now converts the student&#x27;s USD-denominated budget cap into the university&#x27;s local currency via CurrencyConversionService.convert(), falls back to the raw USD amount when conversion is unavailable, and re-renders automatically once currency rates finish loading (ratesLoaded$ subscription). This currency-aware budget/tuition pairing is not covered by any existing TC-UPROF item (CC-31709).</div>
+        </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Tuition card</span></td>
+          <td>Student viewing a University Profile for a university whose tuition_fee_range is present with a non-USD currency (e.g. GBP)</td>
+          <td><div class="steps"><ol><li>Open the University Profile page for the university</li><li>Scroll to / observe the Fit Overview Tuition card</li></ol></div></td>
+          <td>Tuition figure shows the min–max range formatted in the university&#x27;s local currency (e.g. &#x27;9K to 12K GBP&#x27;), not converted to or labeled USD</td>
+          <td>University with tuition_fee_range.currency = &#x27;GBP&#x27; and tuition_fee_range_usd also populated</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Tuition card</span></td>
+          <td>University has no tuition_fee_range but has tuition_fee_range_usd populated</td>
+          <td><div class="steps"><ol><li>Open the University Profile page for the university</li><li>Observe the Fit Overview Tuition card</li></ol></div></td>
+          <td>Tuition figure falls back to tuition_fee_range_usd and displays with a &#x27;USD&#x27; suffix</td>
+          <td>University with tuition_fee_range = null/undefined, tuition_fee_range_usd populated</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
+          <td>Grade 12 student with a saved USD budget_range; university&#x27;s local currency conversion rates are loaded; university has tuition_fee_range in a non-USD currency</td>
+          <td><div class="steps"><ol><li>Open the University Profile page for the university as the student</li><li>Observe the &#x27;Your budget&#x27; line under the Tuition card</li></ol></div></td>
+          <td>Budget cap is shown converted into the university&#x27;s local currency (e.g. &#x27;8,241 GBP&#x27;), not the raw USD figure</td>
+          <td>Student with budget_range = &#x27;upto_10000&#x27;; CurrencyConversionService able to resolve USD→university currency</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
+          <td>Same student/university as TP-003, but currency conversion rates are unavailable or convert() returns null</td>
+          <td><div class="steps"><ol><li>Open the University Profile page before currency rates have loaded (or with conversion service returning null)</li><li>Observe the &#x27;Your budget&#x27; line</li></ol></div></td>
+          <td>Budget cap falls back to the unconverted USD amount (e.g. &#x27;10,000 USD&#x27;) — no blank/error state</td>
+          <td>Same as TP-003 with conversion rates unavailable</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
+          <td>Page loaded while currency rates are still loading (budget line initially shows the USD fallback per TP-004)</td>
+          <td><div class="steps"><ol><li>Load the University Profile page</li><li>Wait for currency conversion rates to finish loading in the background (no manual refresh/navigation)</li><li>Re-observe the &#x27;Your budget&#x27; line</li></ol></div></td>
+          <td>Budget line automatically recomputes and updates to the local-currency amount once rates load, without a page reload</td>
+          <td>Same student/university as TP-003; simulate delayed rates load</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line (&#x27;100000 and above&#x27; tier)</span></td>
+          <td>Student with budget_range = &#x27;100000_and_above&#x27;</td>
+          <td><div class="steps"><ol><li>Open the University Profile page as the student</li><li>Observe the &#x27;Your budget&#x27; line</li></ol></div></td>
+          <td>Budget line shows &#x27;100,000 [currency] and Above&#x27; (converted or USD fallback) — must not attempt to render/convert Infinity</td>
+          <td>Student with budget_range = &#x27;100000_and_above&#x27;</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Cost &amp; Financial Aid — Budget Fit indicator &amp; currency toggle</span></td>
+          <td>Student with a saved budget viewing the Cost &amp; Financial Aid section for a university with populated cost breakdown and a local-currency toggle available</td>
+          <td><div class="steps"><ol><li>Open the University Profile page and scroll to Cost &amp; Financial Aid</li><li>Verify Budget Fit indicator color (green/red) against the university&#x27;s cost</li><li>Toggle between local currency and profile/base currency</li></ol></div></td>
+          <td>Budget Fit indicator and currency toggle behave exactly as before the refactor — no change in budget-cap values or currency symbols post-refactor of BUDGET_MAX_VALUES/CURRENCY_SYMBOLS into constants.ts</td>
+          <td>University with populated cost breakdown and a currency differing from student&#x27;s profile currency</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Recommended Courses panel — course name truncation</span></td>
+          <td>Student with saved course preferences viewing a university with at least one recommended course whose name is long enough to overflow the row</td>
+          <td><div class="steps"><ol><li>Open the University Profile page as the student and scroll to Recommended Courses</li><li>Observe a course row with a long course name</li><li>Hover over the truncated course name</li></ol></div></td>
+          <td>Course name is truncated with an ellipsis in the row; hovering (after ~0.5s) shows a tooltip with the full, untruncated course name</td>
+          <td>Recommended course with a name long enough to overflow the fixed-width row</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

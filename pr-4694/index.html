@@ -83,18 +83,13 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="impact-row">
           <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-029–030</span>
-          <span class="im-reason">Fit Overview Tuition card (buildTuitionCard/getAnnualTuitionText) now prefers tuition_fee_range (local currency) over tuition_fee_range_usd and renders the university&#x27;s real currency code instead of a hardcoded &#x27;USD&#x27; suffix. Both TCs assume USD-only display and need re-verification against universities with local-currency tuition data.</span>
-        </div>
-        <div class="impact-row">
-          <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-068, TC-UPROF-070, TC-UPROF-106</span>
-          <span class="im-reason">BUDGET_MAX_VALUES and the currency-symbol map were extracted out of UniversityCostComponent into the shared constants.ts (now also consumed by FitOverviewComponent). Pure refactor with no logic change inside university-cost.component.ts itself, but shared-constant changes carry regression risk for Cost &amp; Financial Aid&#x27;s Budget Fit indicator and currency toggle if the two consumers&#x27; lookups diverge.</span>
+          <span class="im-range">TC-UPROF-029–030, 068/070/106</span>
+          <span class="im-reason">Fit Overview&#x27;s tuition/budget currency display and formatting logic changed — existing coverage of the Tuition card and &#x27;Your budget&#x27; line must be re-verified.</span>
         </div>
         <div class="impact-row">
           <span class="im-module">Discovery &amp; Research — University Profile</span>
           <span class="im-range">TC-UPROF-076</span>
-          <span class="im-reason">uni-recommended-courses.component.html adds truncate + nz-tooltip to the course name paragraph. The existing &#x27;Recommended Courses panel&#x27; TC should verify long course names truncate correctly and the full name shows on hover instead of wrapping/overflowing.</span>
+          <span class="im-reason">Cost &amp; Financial Aid&#x27;s Budget Fit indicator and currency toggle depend on BUDGET_MAX_VALUES/CURRENCY_SYMBOLS now centralized in constants.ts.</span>
         </div>
     </div>
     
@@ -103,7 +98,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="new-row">
           <div class="new-dot"></div>
-          <div class="new-text"><span class="new-module">Discovery &amp; Research — University Profile</span> — Fit Overview&#x27;s budget line (&#x27;Your budget: Up to X&#x27;) now converts the student&#x27;s USD-denominated budget cap into the university&#x27;s local currency via CurrencyConversionService.convert(), falls back to the raw USD amount when conversion is unavailable, and re-renders automatically once currency rates finish loading (ratesLoaded$ subscription). This currency-aware budget/tuition pairing is not covered by any existing TC-UPROF item (CC-31709).</div>
+          <div class="new-text"><span class="new-module">Discovery &amp; Research — University Profile</span> — Fit Overview&#x27;s currency-aware budget/tuition conversion and shared &#x27;K&#x27;-rounded amount formatting (CC-31709), not covered by any existing TC-UPROF item.</div>
         </div>
     </div>
   </div>
@@ -131,7 +126,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Tuition card</span></td>
           <td>Student viewing a University Profile for a university whose tuition_fee_range is present with a non-USD currency (e.g. GBP)</td>
           <td><div class="steps"><ol><li>Open the University Profile page for the university</li><li>Scroll to / observe the Fit Overview Tuition card</li></ol></div></td>
-          <td>Tuition figure shows the min–max range formatted in the university&#x27;s local currency (e.g. &#x27;9K to 12K GBP&#x27;), not converted to or labeled USD</td>
+          <td>Tuition figure shows the min–max range formatted in the university&#x27;s local currency, rounded to the nearest thousand with a &#x27;K&#x27; suffix (e.g. &#x27;9K to 12K GBP&#x27;), not converted to or labeled USD</td>
           <td>University with tuition_fee_range.currency = &#x27;GBP&#x27; and tuition_fee_range_usd also populated</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -149,7 +144,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
           <td>Grade 12 student with a saved USD budget_range; university&#x27;s local currency conversion rates are loaded; university has tuition_fee_range in a non-USD currency</td>
           <td><div class="steps"><ol><li>Open the University Profile page for the university as the student</li><li>Observe the &#x27;Your budget&#x27; line under the Tuition card</li></ol></div></td>
-          <td>Budget cap is shown converted into the university&#x27;s local currency (e.g. &#x27;8,241 GBP&#x27;), not the raw USD figure</td>
+          <td>Budget cap is shown converted into the university&#x27;s local currency and rounded to the nearest thousand with a &#x27;K&#x27; suffix (e.g. &#x27;8K GBP&#x27;, not &#x27;8,241 GBP&#x27;), not the raw USD figure</td>
           <td>Student with budget_range = &#x27;upto_10000&#x27;; CurrencyConversionService able to resolve USD→university currency</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -158,7 +153,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
           <td>Same student/university as TP-003, but currency conversion rates are unavailable or convert() returns null</td>
           <td><div class="steps"><ol><li>Open the University Profile page before currency rates have loaded (or with conversion service returning null)</li><li>Observe the &#x27;Your budget&#x27; line</li></ol></div></td>
-          <td>Budget cap falls back to the unconverted USD amount (e.g. &#x27;10,000 USD&#x27;) — no blank/error state</td>
+          <td>Budget cap falls back to the unconverted USD amount, rounded to the nearest thousand with a &#x27;K&#x27; suffix (e.g. &#x27;10K USD&#x27;, not &#x27;10,000 USD&#x27;) — no blank/error state</td>
           <td>Same as TP-003 with conversion rates unavailable</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -167,7 +162,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line</span></td>
           <td>Page loaded while currency rates are still loading (budget line initially shows the USD fallback per TP-004)</td>
           <td><div class="steps"><ol><li>Load the University Profile page</li><li>Wait for currency conversion rates to finish loading in the background (no manual refresh/navigation)</li><li>Re-observe the &#x27;Your budget&#x27; line</li></ol></div></td>
-          <td>Budget line automatically recomputes and updates to the local-currency amount once rates load, without a page reload</td>
+          <td>Budget line automatically recomputes and updates to the local-currency, &#x27;K&#x27;-rounded amount (e.g. &#x27;8K GBP&#x27;) once rates load, without a page reload</td>
           <td>Same student/university as TP-003; simulate delayed rates load</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -176,7 +171,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Fit Overview — Budget line (&#x27;100000 and above&#x27; tier)</span></td>
           <td>Student with budget_range = &#x27;100000_and_above&#x27;</td>
           <td><div class="steps"><ol><li>Open the University Profile page as the student</li><li>Observe the &#x27;Your budget&#x27; line</li></ol></div></td>
-          <td>Budget line shows &#x27;100,000 [currency] and Above&#x27; (converted or USD fallback) — must not attempt to render/convert Infinity</td>
+          <td>Budget line shows &#x27;100K [currency] and Above&#x27; (converted or USD fallback, rounded to the nearest thousand) — must not attempt to render/convert Infinity</td>
           <td>Student with budget_range = &#x27;100000_and_above&#x27;</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>

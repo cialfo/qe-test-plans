@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4693</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4693</div>
+  <div class="h-title">Front end code for login ad slotCc 31660 master</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4693" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4693</a>
+    <div class="h-date">2026-07-22 · CC-31660-master</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">10</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">10</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Auth — Authentication</span>
+          <span class="im-range">TC-AUTH-001–003, 006, 008–009, 017</span>
+          <span class="im-reason">SigninComponent now injects CustomAssetsService and calls loadRememberedUser()/loadLoginBanner() during tenant/subdomain resolution on every sign-in page load. A wiring break here (missing DI provider, thrown error in the subscribe path, or a change to tenant-token resolution) risks breaking the base sign-in page for every role, not just the ad path — the tenant token used to fetch the banner is the same schoolAccessToken/tenantAccessToken used by the login form itself.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Auth — Authentication</span>
+          <span class="im-range">TC-AUTH-007</span>
+          <span class="im-reason">getLoginBanner&#x27;s token now travels via a Tenant-Access-Token header instead of an api_access_token URL query param — a change to how the tenant token is transmitted on a pre-auth endpoint. Worth a quick regression check that password-reset&#x27;s own token handling (a separate endpoint) was not touched by this refactor.</span>
+        </div>
+    </div>
+    
+    <div class="impact-block">
+      <div class="impact-label">New Surfaces</div>
+      
+        <div class="new-row">
+          <div class="new-dot"></div>
+          <div class="new-text"><span class="new-module">Auth — Authentication</span> — Sponsored login-ad banner on the sign-in page&#x27;s promo panel (AuthPromoPanelComponent + PublicAuthLayoutComponent + SigninComponent): for a returning user identified by a remembered email, the backend can resolve a targeted university ad (topline, up to 3 two-tone headlines, uni logo, click-through URL) that replaces the default rotating Cialfo brand copy. Fires view/click analytics + backend interaction tracking (view cap, permanent click-dismiss), and includes new client-side URL-safety and pre-auth PII handling (no tenant token or remembered email in the URL/logs).</div>
+        </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — happy path</span></td>
+          <td>Tenant has an active LOGIN_BANNER custom asset targeted at the test student (topline, 3 headlines incl. at least one **emphasis** marker, uni logo url, login_url, campaign_asset_id). Browser has a remembered user (cialfo_last_user:&lt;subdomain&gt;) with a valid email for that tenant.</td>
+          <td><div class="steps"><ol><li>Navigate to the tenant&#x27;s /signin page</li><li>Observe the promo panel on page load</li></ol></div></td>
+          <td>Panel shows the ad&#x27;s topline (with a trailing → affordance), the ad&#x27;s headlines rendered as two-tone segments (marked text in orange, rest in white), and the uni logo below the headlines — the default Cialfo logo remains visible. A single &#x27;View Login Banner&#x27; analytics event fires and a login_banner_track view interaction is recorded server-side (not asserted via API, via CleverTap/network capture).</td>
+          <td>LOGIN_BANNER custom asset (co-api PR #9057) with login_topline/login_headline1-3/login_uni_logo/login_url/campaign_asset_id; remembered-user localStorage entry with a real email</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — click-through</span></td>
+          <td>Same as TP-001, ad has a valid https:// login_url.</td>
+          <td><div class="steps"><ol><li>Load /signin with the ad visible</li><li>Click anywhere on the promo panel</li></ol></div></td>
+          <td>A new tab opens to the ad&#x27;s login_url with rel=noopener,noreferrer (window.opener is null in the opened tab). A &#x27;Click Login Banner&#x27; analytics event fires and a login_banner_track click interaction is recorded.</td>
+          <td>Same LOGIN_BANNER asset as TP-001</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — unsafe URL is blocked</span></td>
+          <td>LOGIN_BANNER asset&#x27;s login_url is a non-http(s) scheme (e.g. javascript:alert(1)) — simulate via a backend-seeded malformed asset or intercepted response.</td>
+          <td><div class="steps"><ol><li>Load /signin with the malformed ad visible</li><li>Click the promo panel</li></ol></div></td>
+          <td>window.open is never called and no click interaction is tracked — the panel does not execute the unsafe URL.</td>
+          <td>LOGIN_BANNER asset with a javascript: login_url</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — no eligible banner</span></td>
+          <td>Remembered user exists with a valid email, but the backend has no targeted ad for this student (targeting miss / capped / dismissed).</td>
+          <td><div class="steps"><ol><li>Navigate to /signin as the remembered user</li></ol></div></td>
+          <td>getLoginBanner resolves null; the panel falls back to the default rotating Cialfo brand headlines with the Cialfo logo only. No uni logo, no link role/tabindex on the panel, no &#x27;View Login Banner&#x27; event fires.</td>
+          <td>Remembered-user localStorage entry; tenant with no active LOGIN_BANNER asset for this student</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — remembered identifier is a phone number</span></td>
+          <td>Remembered user&#x27;s stored identifier is a phone number (non-email login), not an email address.</td>
+          <td><div class="steps"><ol><li>Navigate to /signin as this remembered user</li></ol></div></td>
+          <td>getLoginBanner is never called (no network request to login_banner) — phone numbers must never be sent as Remembered-Email. Default brand panel renders.</td>
+          <td>Remembered-user localStorage entry with a phone-number identifier</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — backend failure is non-fatal</span></td>
+          <td>Remembered user with valid email; the login_banner endpoint is made to fail (e.g. simulate a 5xx/timeout via network throttling or a backend flag, if available in staging).</td>
+          <td><div class="steps"><ol><li>Navigate to /signin as the remembered user while the endpoint fails</li></ol></div></td>
+          <td>Sign-in page loads normally with the default brand panel — no unhandled error, no broken page, login form remains fully usable.</td>
+          <td>Remembered-user localStorage entry; a way to force the login_banner call to error (staging network condition or feature flag)</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — pre-auth data does not leak into the URL</span></td>
+          <td>Remembered user with valid email and an eligible ad.</td>
+          <td><div class="steps"><ol><li>Load /signin and capture the network request to the login_banner endpoint (devtools/HAR)</li></ol></div></td>
+          <td>The request URL contains neither the tenant access token nor the remembered email as query parameters — both travel only as request headers (Tenant-Access-Token, Remembered-Email). Browser history and any access logs are clean of both values.</td>
+          <td>Same as TP-001</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — headline rotation and no-headlines fallback</span></td>
+          <td>Ad asset present with only 1 or 2 of the 3 headline fields populated (others blank).</td>
+          <td><div class="steps"><ol><li>Load /signin with a 2-headline ad</li><li>Observe the panel for ~7 seconds</li></ol></div></td>
+          <td>The panel rotates only over the non-blank headlines (wraps after the populated count, never showing a blank line). If all three headline fields are blank, the panel falls back entirely to the default 4-headline brand rotation and records no view event, even though a LOGIN_BANNER asset exists.</td>
+          <td>Two LOGIN_BANNER asset variants: one with 2 non-blank headlines, one with all headlines blank</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Sponsored login banner — fresh impression on ad change</span></td>
+          <td>An ad is visible and its view has already been tracked once.</td>
+          <td><div class="steps"><ol><li>With the ad visible, trigger a re-fetch that returns a different campaign_asset_id (e.g. reload during an A/B rotation, if reproducible in staging)</li></ol></div></td>
+          <td>A second &#x27;View Login Banner&#x27; event fires for the new asset — the one-shot view guard re-arms per distinct campaign_asset_id rather than suppressing all further views for the session.</td>
+          <td>Two distinct LOGIN_BANNER assets targeted at the same student for sequential fetches</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-010</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Regression — base sign-in unaffected for a first-time visitor</span></td>
+          <td>No remembered user in localStorage for this tenant (fresh browser/session).</td>
+          <td><div class="steps"><ol><li>Navigate to /signin</li><li>Complete a normal login with email + password</li></ol></div></td>
+          <td>No login_banner request fires, promo panel shows the unchanged default Cialfo brand rotation, and login proceeds and redirects exactly as before this change.</td>
+          <td>A valid test user&#x27;s credentials; clean localStorage (no cialfo_last_user entry)</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

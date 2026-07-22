@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">10</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">10</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">11</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">11</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -84,12 +84,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <div class="impact-row">
           <span class="im-module">Dashboards &amp; Reports — Activity Reports</span>
           <span class="im-range">TC-ACTR-001–021</span>
-          <span class="im-reason">Activity Feed page is this module&#x27;s entire surface; the dismiss button and click-stopPropagation logic sit inside the same feed rows exercised by selection, CTA, and infinite-scroll TCs — verify none regressed.</span>
+          <span class="im-reason">Activity Feed page is this module&#x27;s entire surface; the dismiss button, click-stopPropagation logic, and the new dismiss-reload/in-flight-guard sit inside the same feed rows exercised by selection, CTA, and infinite-scroll TCs — verify none regressed.</span>
         </div>
         <div class="impact-row">
           <span class="im-module">Communications — Notifications</span>
           <span class="im-range">TC-NOTIF-001–044</span>
-          <span class="im-reason">Same /feeds route and ActivityFeedsService documented under this module&#x27;s activity-feeds.md doc. Week-grouping logic was extracted into groupActivitiesByWeek() (stated as behavior-preserving in the diff) — confirm list rendering/sorting/filtering still pass (TC-NOTIF-011–020, 034–040, 043–044).</span>
+          <span class="im-reason">Same /feeds route and ActivityFeedsService documented under this module&#x27;s activity-feeds.md doc. getActivityFeeds() now shares fetchFeedsPage()/applyFeedsResponse() with the new post-dismiss reload path (previously a standalone method) — confirm list rendering/sorting/filtering/pagination still pass unchanged (TC-NOTIF-011–020, 034–040, 043–044).</span>
         </div>
         <div class="impact-row">
           <span class="im-module">Dashboards &amp; Reports — Counselor Dashboard</span>
@@ -103,7 +103,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="new-row">
           <div class="new-dot"></div>
-          <div class="new-text"><span class="new-module">Dashboards &amp; Reports — Activity Reports</span> — Per-row Dismiss (×) action on Activity Feed sidebar items: hover/focus-revealed icon, PUT /v4/feeds/activities/:id/dismiss, optimistic local removal + urgent-count decrement, and selection fallback to the first item of the refreshed list when the dismissed item was the one selected. No existing TC module covers dismissal on this page yet.</div>
+          <div class="new-text"><span class="new-module">Dashboards &amp; Reports — Activity Reports</span> — Per-row Dismiss (×) action on Activity Feed sidebar items: hover/focus-revealed icon, PUT /v4/feeds/activities/:id/dismiss, optimistic local removal + urgent-count decrement, an in-flight guard that no-ops a second dismiss click on the same item while the first PUT is pending, and — once the PUT succeeds — a full reconciling reload of every previously-loaded page (not just the current one) since offset pagination means a locally-filtered page can no longer be trusted after a row is removed. No existing TC module covers dismissal on this page yet.</div>
         </div>
     </div>
   </div>
@@ -131,7 +131,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — non-selected item</span></td>
           <td>Counselor is on /feeds with 2+ pending feed items loaded; the item to dismiss is not the currently selected one.</td>
           <td><div class="steps"><ol><li>Hover over a feed row that is not the selected feed</li><li>Click the × (Dismiss) icon that appears on hover</li><li>Observe the sidebar list and the currently selected feed&#x27;s detail pane</li></ol></div></td>
-          <td>PUT v4/feeds/activities/:id/dismiss fires for the hovered item&#x27;s id; the row disappears from the sidebar immediately with no full page reload; the previously selected feed and its detail pane remain unchanged.</td>
+          <td>PUT v4/feeds/activities/:id/dismiss fires for the hovered item&#x27;s id; the row disappears from the sidebar immediately (optimistic update) with no full page reload; the previously selected feed and its detail pane remain unchanged.</td>
           <td>2+ ActivityFeed rows for the acting counselor, at least one with a deadline.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -157,18 +157,18 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td class="t-id">TP-004</td>
           <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — urgent (deadline) count</span></td>
           <td>Counselor has an Urgent badge count &gt; 0 from feeds with deadlines, plus at least one feed without a deadline.</td>
-          <td><div class="steps"><ol><li>Note the current Urgent button badge count</li><li>Dismiss a feed item that has a deadline</li><li>Verify the badge decrements by 1</li><li>Dismiss a feed item without a deadline</li><li>Verify the badge count is unchanged</li></ol></div></td>
-          <td>Badge count decreases by exactly 1 only when the dismissed item had a deadline; no change when it did not. Count never goes below 0.</td>
+          <td><div class="steps"><ol><li>Note the current Urgent button badge count</li><li>Dismiss a feed item that has a deadline</li><li>Verify the badge decrements by 1 immediately</li><li>Wait for the post-dismiss reload to finish and verify the badge still matches</li><li>Dismiss a feed item without a deadline</li><li>Verify the badge count is unchanged</li></ol></div></td>
+          <td>Badge count decreases by exactly 1, optimistically, only when the dismissed item had a deadline, and the server-confirmed with_deadline_count from the post-dismiss reload matches; no change when the dismissed item had no deadline. Count never goes below 0.</td>
           <td>One ActivityFeed row with a deadline, one without, for the same counselor.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-005</td>
-          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — persistence across reload/pagination</span></td>
-          <td>A feed item has just been dismissed.</td>
-          <td><div class="steps"><ol><li>Dismiss a feed item</li><li>Reload the /feeds page</li><li>Scroll to trigger infinite-scroll loading of subsequent pages</li></ol></div></td>
-          <td>The dismissed item never resurfaces — co-api&#x27;s list query permanently excludes dismissed: true rows for that counselor and there is no undo endpoint; confirms the optimistic client-side removal matches server truth.</td>
-          <td>Same as TP-001; requires a real reload, not just observing client-side subscription state.</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — reload reconciles every loaded page after pagination shift</span></td>
+          <td>Counselor has scrolled to load 2+ pages (40+ pending items) on /feeds via infinite scroll.</td>
+          <td><div class="steps"><ol><li>Scroll to load at least 2 pages of feed items</li><li>Dismiss an item that is on the first (already-loaded) page</li><li>Without any further manual scrolling, observe the sidebar&#x27;s content and its loading/&#x27;all caught up&#x27; state</li><li>Separately, reload the /feeds page from scratch and scroll through all pages again</li></ol></div></td>
+          <td>After the dismiss PUT succeeds, every previously-loaded page (0 through the last-loaded page) is refetched from the backend in order; an item that shifted into an earlier page&#x27;s offset window because of the removed row appears without requiring an extra manual scroll, and listLoaded$ still correctly reaches true instead of getting stuck on a stale count. On a fresh reload, the dismissed item never resurfaces — co-api&#x27;s list query permanently excludes dismissed: true rows for that counselor and there is no undo endpoint.</td>
+          <td>40+ ActivityFeed rows for the counselor so 2+ pages (PER_PAGE=20) load before dismissing.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -212,8 +212,17 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Communications — Notifications</span><span class="t-surface">Full-page regression — grouping/sort/selection</span></td>
           <td>Counselor has feed items spanning multiple weeks with mixed statuses.</td>
           <td><div class="steps"><ol><li>Load /feeds</li><li>Verify week-group headers and sort order (latest week first)</li><li>Click a feed item and verify it becomes selected and its detail loads</li><li>Apply the Urgent and Activity Type filters and verify the list still updates correctly</li></ol></div></td>
-          <td>Grouping, sorting, filtering, and selection behave identically to pre-PR — groupActivitiesByWeek() is a pure extraction of pre-existing logic with no behavior change; existing TC-NOTIF-011–020/034/035/038–040 and TC-ACTR assertions should pass unmodified.</td>
+          <td>Grouping, sorting, filtering, and selection behave identically to pre-PR — groupActivitiesByWeek()/fetchFeedsPage()/applyFeedsResponse() are a behavior-preserving extraction/reuse of pre-existing logic; existing TC-NOTIF-011–020/034/035/038–040 and TC-ACTR assertions should pass unmodified.</td>
           <td>Multi-week feed dataset per existing TC data requirements.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-011</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Dismiss — duplicate-click in-flight guard</span></td>
+          <td>Counselor is viewing /feeds with a feed item that has a deadline.</td>
+          <td><div class="steps"><ol><li>Hover a feed row and click its Dismiss (×) icon twice in quick succession, before the first PUT request resolves</li><li>Observe network calls fired and the Urgent badge count afterward</li></ol></div></td>
+          <td>Only one PUT v4/feeds/activities/:id/dismiss fires for the item — the second click is a no-op because dismissActivityFeed() returns EMPTY while dismissingFeedIds still contains the id from the first, in-flight call. The Urgent badge count decrements by exactly 1, not 2, and no duplicate reload is triggered.</td>
+          <td>One ActivityFeed row with a deadline for the acting counselor; a way to fire two dismiss clicks before the network round-trip completes (e.g. throttle the network in devtools).</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

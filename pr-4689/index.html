@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">12</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">12</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">13</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">13</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -83,8 +83,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="impact-row">
           <span class="im-module">Discovery &amp; Research — University Profile</span>
-          <span class="im-range">TC-UPROF-005,009,012,031,032,042,056,068,098,099</span>
-          <span class="im-reason">CleverTap tracking hooks and a testimonial-carousel re-render fix touch the sticky nav, beta menu, regional reps, scattergram filters, currency toggle, testimonials carousel, best-opportunities card, and contact card — all wired via UniversityProfileTrackingService without changing markup/behaviour, except the testimonials observer timing fix below.</span>
+          <span class="im-range">TC-UPROF-005, 009, 012, 031, 032, 042, 056, 068, 098, 099</span>
+          <span class="im-reason">All 31 changed files are under university-profile/** — nav bar, header beta menu, regional reps, scattergram filters/axis, currency toggle, testimonials, best-opportunities fold, and contact info are pre-existing tested surfaces.</span>
         </div>
     </div>
     
@@ -113,8 +113,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation</span></td>
           <td>On a University Profile page with all sections present (Overview, Entry Requirements, Cost, Courses, Scholarships, Notes, Student Life).</td>
           <td><div class="steps"><ol><li>Click each sticky nav tab in order, including tabs other than the first (e.g. Cost, Courses, Student Life).</li><li>Observe scroll position after each click.</li></ol></div></td>
-          <td>Each click scrolls to the correct section and fires a Click Nav Tab tracking event carrying the clicked section_name — verified for non-first tabs, not just the default.</td>
-          <td>University profile with every section populated.</td>
+          <td>Every tab scrolls the page to its corresponding section — not only the first tab. (Previously the per-link click handler only ever bound to the first nz-link.)</td>
+          <td>Any university with data for all profile sections.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -122,8 +122,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation — legacy anchor deep link</span></td>
           <td>A University Profile URL with a legacy anchor hash (e.g. #courses).</td>
           <td><div class="steps"><ol><li>Navigate directly to the University Profile URL with the anchor hash appended.</li><li>Observe initial scroll position.</li></ol></div></td>
-          <td>Page scrolls to the section matching the legacy hash on load with no tracking event misfired for a click that didn&#x27;t happen.</td>
-          <td>University profile URL with a legacy anchor hash pointing to a real section id.</td>
+          <td>Page loads scrolled to the section matching the hash, consistent with pre-PR behavior.</td>
+          <td>Any university profile URL with a valid section hash.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -131,8 +131,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu</span></td>
           <td>University Profile header with the Beta tag visible.</td>
           <td><div class="steps"><ol><li>Click the Beta tag to open the menu.</li><li>Click elsewhere to close it.</li><li>Re-open via click, then close/re-open using Enter and Space keys with the tag focused.</li></ol></div></td>
-          <td>Menu opens/closes via mouse and keyboard; a Click Beta Menu event fires once per open, not on close or on repeated visible-state pushes.</td>
-          <td>None beyond a standard university profile.</td>
+          <td>Menu opens and closes correctly for every interaction path (click, Enter, Space); no stuck-open or stuck-closed state; Click Beta Menu fires once on open, not on close or re-emitted opens.</td>
+          <td>None — any University Profile page.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -140,8 +140,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu (Share Feedback / View Previous Version)</span></td>
           <td>Beta Menu open.</td>
           <td><div class="steps"><ol><li>Click &quot;Share Feedback&quot;.</li><li>Re-open the menu and click &quot;View Previous Version&quot;.</li></ol></div></td>
-          <td>Share Feedback opens the feedback window/tab (window.open called) and fires Click Share Feedback with source_feature/section_name = beta_menu; View Previous Version navigates and fires its own tracked event.</td>
-          <td>None beyond a standard university profile.</td>
+          <td>Share Feedback opens the typeform in a new tab; View Previous Version deep-links to the legacy profile for the current university/student.</td>
+          <td>A student context with a valid university slug.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -149,8 +149,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Regional Representatives</span></td>
           <td>A university with regional representatives that have email, phone, LinkedIn, and calendar link populated.</td>
           <td><div class="steps"><ol><li>On the active rep card, click the email address.</li><li>Click &quot;Message&quot;.</li><li>Click &quot;Book a call&quot; (if calendar_link present).</li><li>Click the LinkedIn row.</li></ol></div></td>
-          <td>Each action performs its normal behaviour (mailto/message modal/calendar link/LinkedIn link) and fires a distinct tracked event identifying the rep and the action taken.</td>
-          <td>University with 2+ regional reps, one fully populated (email, phone, linkedin, calendar_link).</td>
+          <td>Message sets window.location to the correct rep&#x27;s mailto link; Book a Call and LinkedIn open the correct rep&#x27;s calendar/LinkedIn URL in a new tab — using the newly-passed rep object, not a stale/wrong rep.</td>
+          <td>University with 2+ regional reps, so a mismatch between the active card and tracked rep would be visible.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -158,8 +158,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Filters</span></td>
           <td>University with scattergram data and filter options for grad year, region, citizenship, and course/major.</td>
           <td><div class="steps"><ol><li>Apply a Grad Year filter.</li><li>Apply a Region filter.</li><li>Apply a Citizenship filter.</li><li>Enter a value in Course/Major search and commit it (blur or Enter).</li></ol></div></td>
-          <td>Each filter change re-renders the scattergram with the filtered dataset and fires a tracked event carrying the specific filter type and value changed.</td>
-          <td>University with scattergram entries spanning multiple grad years, regions, and citizenships.</td>
+          <td>Each filter still updates the scattergram&#x27;s plotted points and persists to localStorage as before the refactor from string literals to the SCATTERGRAM_FILTER_TYPE constant map.</td>
+          <td>University with scattergram entries across multiple grad years/regions/citizenships.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -167,8 +167,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Axis Switch</span></td>
           <td>Scattergram visible with default axes.</td>
           <td><div class="steps"><ol><li>Change the X axis selector to a different test type.</li><li>Change the Y axis selector to a different test type.</li></ol></div></td>
-          <td>Axis changes re-plot the chart and each fires a tracked event identifying which axis changed and the new test type.</td>
-          <td>University with scattergram data covering 2+ test types.</td>
+          <td>Chart redraws with the newly selected axes on both changes.</td>
+          <td>University with data for at least 2 distinct test types on each axis.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -176,17 +176,17 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Cost &amp; Financial Aid — Currency Toggle</span></td>
           <td>University with cost data and a valid currency conversion available (profile currency differs from university currency).</td>
           <td><div class="steps"><ol><li>Toggle currency from University Currency to Profile Currency.</li><li>Toggle back to University Currency.</li></ol></div></td>
-          <td>Displayed cost figures convert correctly on each toggle and a tracked event fires identifying the currency switched to.</td>
-          <td>University with cost data and an FX rate configured for the student&#x27;s profile currency.</td>
+          <td>Displayed cost figures switch correctly between currencies both directions.</td>
+          <td>Student profile currency different from the university&#x27;s local currency, with a valid conversion rate.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-009</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel</span></td>
-          <td>University with 3+ testimonials.</td>
-          <td><div class="steps"><ol><li>Scroll the testimonials carousel forward and backward using its nav controls.</li><li>Scroll slowly enough to pass multiple cards through the viewport.</li></ol></div></td>
-          <td>A View Testimonial impression event fires once per testimonial the first time it crosses 50% visibility inside the carousel track, never re-firing for a card scrolled past and back.</td>
-          <td>University with 3+ testimonials, each with a distinct student_name/country so impression payloads are attributable.</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel &amp; View Impressions</span></td>
+          <td>University with 3+ testimonials, at least one fully out of the initial viewport.</td>
+          <td><div class="steps"><ol><li>Load the page and observe the page renders without a JS/console error.</li><li>Scroll the testimonials carousel forward and backward using its nav controls, slowly enough to pass multiple cards through the viewport.</li><li>Switch to a different university profile (same-route uni→uni navigation) and repeat.</li></ol></div></td>
+          <td>The page compiles and renders (see blocker note below) — carousel scroll/nav behavior is unchanged by the new data-testimonial-id/position attributes and IntersectionObserver, no visual jank, no broken prev/next state, and impressions reset per university switch without re-firing for already-seen cards.</td>
+          <td>University with at least 3 Contentful testimonials; a second university to switch to for the reset check.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -194,8 +194,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Best Opportunities First Fold</span></td>
           <td>Student context, Grade 12, university with a matched course (firstCourse set).</td>
           <td><div class="steps"><ol><li>Click the Best Opportunities card.</li></ol></div></td>
-          <td>Click navigates to the matched course and fires a tracked event identifying the course clicked.</td>
-          <td>Grade 12 student profile; university with at least one course match returned in firstCourse.</td>
+          <td>Navigates to / scrolls to the Courses &amp; Majors section, same as before the onBestOpportunitiesClick() wrapper was introduced.</td>
+          <td>Student with course preferences that produce a matched first course.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
@@ -203,17 +203,26 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Contact Information</span></td>
           <td>University with contact info and representatives configured.</td>
           <td><div class="steps"><ol><li>Click &quot;View all representatives&quot; on the Contact Information card.</li></ol></div></td>
-          <td>Click opens the full representatives view/modal and fires a tracked event for the action.</td>
-          <td>University with representatives configured.</td>
+          <td>Representatives Modal opens and lists the university&#x27;s representatives.</td>
+          <td>University with at least 1 representative.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
         <tr>
           <td class="t-id">TP-012</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel (rapid profile switch / observer re-setup guard)</span></td>
-          <td>Two different universities, each with 3+ testimonials, reachable in quick succession from the same session (e.g. via back-to-back profile navigation or comparison flow).</td>
-          <td><div class="steps"><ol><li>Load University Profile A&#x27;s testimonials.</li><li>Before the 200ms impression-observer setup delay elapses, switch to University Profile B&#x27;s testimonials (re-trigger ngOnChanges on the same component instance).</li><li>Wait for the setup delay to elapse and scroll the carousel to bring cards into view.</li><li>Navigate away entirely (destroy the component) immediately after a rapid switch, before the delay elapses.</li></ol></div></td>
-          <td>Only one impression observer is ever attached — for University B&#x27;s cards, not a stale one still pointed at A. No impression events fire for A&#x27;s testimonials after the switch, and no error or duplicate observer occurs when the component is destroyed mid-delay (the pending setup timeout is cleared, not left to fire after teardown).</td>
-          <td>Two universities each with 3+ testimonials with distinct student_name/country values, reachable in the same session without a full page reload.</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Fold-Reach Scroll Tracking</span></td>
+          <td>University Profile page with all folds present, including Student Life.</td>
+          <td><div class="steps"><ol><li>Scroll down through every fold in order (First Fold, Overview, Entry Requirements, Cost, Courses, Scholarships, Student Life, Notes).</li><li>Scroll back up past an already-viewed fold, then down again.</li></ol></div></td>
+          <td>Fold Viewed fires once per fold on first reaching 50% visibility, with a monotonically non-decreasing max_fold_reached; re-entering an already-viewed fold does not re-fire it.</td>
+          <td>University with content for every fold section (so none are hidden by *ngIf).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-013</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">BLOCKER — build/compile break in uni-testimonials.component.ts</span></td>
+          <td>PR #4689 at current head (commit c97bf74527).</td>
+          <td><div class="steps"><ol><li>Run `tsc`/the app build against the branch, or load any University Profile page with testimonials in the running app.</li></ol></div></td>
+          <td>This must fail today: `ngOnChanges()` in uni-testimonials.component.ts is missing its closing brace (introduced by the Copilot autofix commit that wrapped the setTimeout in a null-check), so `ngAfterViewInit()` and `ngOnDestroy()` end up nested inside `ngOnChanges()` — a TypeScript syntax/compile error. PR&#x27;s own `eslint` check is already failing and `test`/`baseline` jobs are stuck pending as of this diff. Every other TC in this plan is blocked until this brace is fixed and the branch actually compiles.</td>
+          <td>None — this is a static/compile-time defect, not a data-dependent scenario.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

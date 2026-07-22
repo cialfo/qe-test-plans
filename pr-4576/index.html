@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4576</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4576</div>
+  <div class="h-title">Angular 12→21 upgrade (Waves 0–D)</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4576" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4576</a>
+    <div class="h-date">2026-07-22 · chore/ng-upgrade-wave0-preflight</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">15</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">15</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Auth — Authentication</span>
+          <span class="im-range">TC-AUTH-001–045</span>
+          <span class="im-reason">Login/signin, mobile-OTP signin, forgot/reset-password: control-flow rewrite (*ngIf→@if), standalone component conversion, UntypedFormGroup/Control migration, ngx-intl-tel-input swap (was @cialfo/ngx-intl-tel-input v0.0.7, now community v16 + intl-tel-input 19), and @ngneat/until-destroy removed in favor of DestroyRef/takeUntilDestroyed in signin-with-mobile.component.ts. Any regression here blocks all downstream flows.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Auth — Guardian Portal</span>
+          <span class="im-range">TC-GRDP-001–055</span>
+          <span class="im-reason">guardian/profile-form.component: phone input control (maxLength type changed string→number, markPristineOnExternalChange input removed), email error-template control-flow rewrite.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Auth — Onboarding</span>
+          <span class="im-range">TC-ONBRD-001–035</span>
+          <span class="im-reason">onboarding-quiz and onboarding-and-roadblock/question-control: ngx-intl-tel-input swap, control-flow rewrite, standalone conversion across 32+ files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Student List</span>
+          <span class="im-range">TC-STUL-001–081</span>
+          <span class="im-reason">column-picker.component (nz-checkbox-wrapper removed and replaced with plain checkbox + manual change binding — explicitly flagged by author as needing QE visual/behavior check), drag-drop reordering, filter-bar, bulk-assign-* modals converted to NZ_MODAL_DATA pattern.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Student Profile</span>
+          <span class="im-range">TC-SPROF-001–154</span>
+          <span class="im-reason">student-contacts-form (button click output renamed click→btnClick on app-button-icon — a breaking change if any other caller still binds (click)), grades/employment/education/medical-experience forms, resume-editor — 85 changed files, largest single-module blast radius after CDocs/University Profile.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Settings / Configuration</span>
+          <span class="im-range">TC-CFG-001–099</span>
+          <span class="im-reason">configure-new/contact-info and 74 other config components: nz-checkbox-wrapper removal, scattergram score-mapping section, school-address/school-detail forms — 120 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">CDocs — Documents</span>
+          <span class="im-range">TC-CDOC-001–062</span>
+          <span class="im-reason">Largest blast radius in the PR (399 changed files under cdocs/): nz-checkbox-wrapper migration in school-information-school-profile-section, cdocs-document-types-filter-dropdown, cdocs-submissions-more-filters, cdocs-uploaded-document-types-filter-dropdown; all cdocs forms/sidebars restandalone-ized.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">CDocs — Recommendations</span>
+          <span class="im-range">TC-CREC-001–045</span>
+          <span class="im-reason">cdocs-recommenders/recommender-sidebar, my-recommendations teacher-evaluation-form — standalone conversion, forms migrated to Untyped* form types.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">CDocs — Transcripts</span>
+          <span class="im-range">TC-CTRN-001–012</span>
+          <span class="im-reason">transcript/student-transcript-sidebar, transcript-request-form, college-request-form — standalone conversion, forms migration.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-001–118</span>
+          <span class="im-reason">Second-largest blast radius (341 files): scattergram-v2 (filters/settings/quick-filters) uses nz-checkbox-wrapper migration and is explicitly named by the author as a priority QE visual/behavior check target; university-rep-form phone input (ngx-intl-tel-input swap, maxLength type change); university-notes, university-tags, university-actions, similar-universities, score-slider, add-test-score-drawer.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Search &amp; Lists</span>
+          <span class="im-range">TC-USRL-001–066</span>
+          <span class="im-reason">school-search page and university-common filter components (regions-filter-dropdown, kick-start-filter-dropdown, course-major-filters, university-search-filters) all use the nz-checkbox-wrapper migration pattern.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Courses</span>
+          <span class="im-range">TC-CRS-001–071</span>
+          <span class="im-reason">course-search page and courses-more-filter-sidebar — nz-checkbox-wrapper migration, standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Scholarships</span>
+          <span class="im-range">TC-SCHL-001–049</span>
+          <span class="im-reason">explore-scholarships/scholarship-page — nz-checkbox-wrapper migration for filters, standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Career Exploration</span>
+          <span class="im-range">TC-CAR-001–061</span>
+          <span class="im-reason">careers/filters and careers-carousel — carousel migrated off @cialfo/ngx-splide (ViewEngine fork, removed) onto an in-repo app-splide component imperatively driving @splidejs/splide v2; filters standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Counselor Dashboard</span>
+          <span class="im-range">TC-CDASH-001–066</span>
+          <span class="im-reason">107 changed files: da-coverage, visit-accept/decline, propose-new-time, application-funnel, application-result, counselor-dashboard-sidebar — modal-heavy surface, all migrated to NZ_MODAL_DATA injection pattern.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Student Dashboard</span>
+          <span class="im-range">TC-STUD-001–081</span>
+          <span class="im-reason">chat-box, recommended-universities/preference-questions (incl. sidebar-range-scale) — standalone conversion, 56 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Apps — Applications</span>
+          <span class="im-range">TC-APPL-001–074</span>
+          <span class="im-reason">applications-v5/common-components: 185 changed files including note-modal, scholarship-modal, conditions-modal, change-portal-modal, select-course/select-date/select-details — every modal converted to the NZ_MODAL_DATA injection pattern (73-modal migration cited in PR description); da-accept-decline-modal, submitted-applications.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Apps — Direct Apply</span>
+          <span class="im-range">TC-DA-001–099</span>
+          <span class="im-reason">direct-apply/decline-offers-modal, ucas-offer-modal, submitted-applications, tuition-fees payment modals (forward-payment, new-payment, payment-status) — NZ_MODAL_DATA migration.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — Hubs / Community &amp; Content</span>
+          <span class="im-range">TC-HUB-001–076</span>
+          <span class="im-reason">117 changed files: hub-common (add-link-modal, add-to-hub-modal, create-folder-modal, access-dropdown), counselor-hubs (create-new-hub, copy-content-to-hub, hub-like-modal), content-hub/listing — modal migration + standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — College Visits</span>
+          <span class="im-range">TC-CVIS-001–068</span>
+          <span class="im-reason">visit-form-sidebar, visit-colleges-tab, email-reps-sidebar, visit-attendees, scheduled-visits-page — standalone conversion, ngx-intl-tel-input references.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Tasks</span>
+          <span class="im-range">TC-TASK-001–106</span>
+          <span class="im-reason">student-tasks/task-filters, task-category-list, tasks-resources/task-list, assessment-detail-drawer — standalone conversion across 31 files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — University Quest &amp; Gamification</span>
+          <span class="im-range">TC-QUEST-001–054</span>
+          <span class="im-reason">onboarding-quiz components (classmates-modal, horizontal-pill, pre-quiz, uni-interested) and saige-coins/redeem-modal — modal migration, standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Notifications</span>
+          <span class="im-range">TC-NOTIF-001–048</span>
+          <span class="im-reason">activity-feeds/details-table and not-sent-form/not-sent-da-form use the nz-checkbox-wrapper migration pattern.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Broadcasts</span>
+          <span class="im-range">TC-BCT-001–059</span>
+          <span class="im-reason">broadcast-compose, broadcast-detail — standalone conversion, ngx-intl-tel-input references (likely shared form-control imports, not a phone field itself — verify).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Cialfo Mail / Explore Mail</span>
+          <span class="im-range">TC-MAIL-001–004</span>
+          <span class="im-reason">cialfo-mail-home — standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-001–052</span>
+          <span class="im-reason">uploads-integrations-page, uploads-wizard-page — standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Groups</span>
+          <span class="im-range">TC-GRP-001–036</span>
+          <span class="im-reason">create-group-wizard, group-detail, group-students, groups-list — standalone conversion, modal migration.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Team</span>
+          <span class="im-range">TC-PPL-001–062</span>
+          <span class="im-reason">add-people/* (assign-student-dialog, calendar-sync, change-language, change-password, select-calendar-dialog) and peoples-page/people-table — 40 changed files, modal + standalone migration.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Help Center &amp; Guides</span>
+          <span class="im-range">TC-HCG-001–046</span>
+          <span class="im-reason">cialfo-guides/book-slot, cialfo-guides listing page — control-flow rewrite, standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — BI &amp; Analytics</span>
+          <span class="im-range">TC-BIANA-001–027</span>
+          <span class="im-reason">data-science-config component — standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Admin Overview</span>
+          <span class="im-range">TC-ADMO-001–020</span>
+          <span class="im-reason">reports.component — standalone conversion (small blast radius, 5 files).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — College Compare</span>
+          <span class="im-range">TC-CCOM-001–072</span>
+          <span class="im-reason">compare-university/search-university — standalone conversion (small blast radius, 7 files).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Apps — University Invite</span>
+          <span class="im-range">TC-UINV-001–036</span>
+          <span class="im-reason">uni-invite — standalone conversion (small blast radius, 4 files).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Assessments</span>
+          <span class="im-range">TC-ASMT-001–038</span>
+          <span class="im-reason">student-assessment-list, student-assessment-rate-personality — standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Notes</span>
+          <span class="im-range">TC-NOTE-001–039</span>
+          <span class="im-reason">student-notes-new (email-note, note-detail, page) — standalone conversion.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — Connections</span>
+          <span class="im-range">TC-CONN-001–054</span>
+          <span class="im-reason">Small blast radius (9 files) — component list not individually enumerated in diff sample, standalone conversion sweep likely touched shared imports.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Inbox / Messaging</span>
+          <span class="im-range">TC-INB-001–047</span>
+          <span class="im-reason">inbox.component — standalone conversion (9 changed files).</span>
+        </div>
+    </div>
+    
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Email/password login</span></td>
+          <td>User has a valid onboarded account on staging (any role).</td>
+          <td><div class="steps"><ol><li>Navigate to /signin</li><li>Enter valid email and password</li><li>Click the login button</li></ol></div></td>
+          <td>User is authenticated and redirected to their role-appropriate landing page; no console errors from Untyped* form control migration or standalone bootstrap.</td>
+          <td>Existing onboarded user credentials (any role) in the automation tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Mobile/OTP login</span></td>
+          <td>User&#x27;s account has a verified phone number.</td>
+          <td><div class="steps"><ol><li>Navigate to /signin-with-mobile</li><li>Search for and select the tenant/school (nz-select nzServerSearch)</li><li>Enter phone number via ngx-intl-tel-input (new package: ngx-intl-tel-input v16 replacing @cialfo/ngx-intl-tel-input v0.0.7)</li><li>Submit to request OTP</li><li>Enter OTP and submit</li></ol></div></td>
+          <td>Country selector renders and behaves as before (default country, dial-code separation, 20-char max length now typed as a number not a string); OTP is requested and login completes.</td>
+          <td>Test account with a verified phone number reachable for OTP in the automation tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Auth — Authentication</span><span class="t-surface">Forgot / reset password</span></td>
+          <td>User has an existing account with a known email.</td>
+          <td><div class="steps"><ol><li>Navigate to /forgot-password</li><li>Submit the registered email</li><li>Open the reset link and set a new password on /reset-password</li></ol></div></td>
+          <td>Reset email is sent and the reset form accepts and saves the new password; login succeeds with the new password afterward.</td>
+          <td>Test account with a real/plus-addressed mailbox capable of receiving the reset email.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Auth — Guardian Portal</span><span class="t-surface">Guardian profile phone field</span></td>
+          <td>Logged in as a guardian.</td>
+          <td><div class="steps"><ol><li>Open guardian profile-form</li><li>Edit the mobile number field (ngx-intl-tel-input, maxLength now numeric 20 not string &#x27;20&#x27;)</li><li>Save the form</li></ol></div></td>
+          <td>Phone field accepts input up to 20 characters, validates format, and saves without truncation or console errors related to the maxLength type change.</td>
+          <td>Guardian test account linked to at least one student.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">People — Student List</span><span class="t-surface">Column picker checkbox + drag reorder</span></td>
+          <td>Logged in as a counselor with access to the student list.</td>
+          <td><div class="steps"><ol><li>Open Student List</li><li>Open the column picker panel</li><li>Check/uncheck several columns (checkbox is now a plain &lt;label nz-checkbox&gt; in place of the removed &lt;nz-checkbox-wrapper&gt;, with manual (nzCheckedChange) binding)</li><li>Drag-reorder a column entry via the handle</li><li>Close the panel and confirm the table reflects the changes</li></ol></div></td>
+          <td>Checkbox toggle state updates instantly and is visually indistinguishable from before; drag reorder still works with the list as the CDK drop-list scroll container; column visibility/order persists after closing the panel.</td>
+          <td>Counselor account with student-list access; at least one student record so the table renders.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">People — Student Profile</span><span class="t-surface">Student contact form — close button</span></td>
+          <td>Logged in as a counselor viewing a student profile with at least one contact.</td>
+          <td><div class="steps"><ol><li>Open Student Profile &gt; Contacts</li><li>Click Add or Edit on a contact to open the contact form</li><li>Click the close (X) button (app-button-icon output renamed from (click) to (btnClick))</li></ol></div></td>
+          <td>Clicking the close icon dismisses the contact form drawer/modal without saving; no dead click (verifying the renamed component output was rewired correctly everywhere it&#x27;s consumed).</td>
+          <td>Student record with an existing contact in the automation tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Scattergram v2 filters/settings</span></td>
+          <td>Logged in as a counselor viewing a university profile with scattergram data.</td>
+          <td><div class="steps"><ol><li>Open a University Profile with scattergram data</li><li>Open Scattergram Settings and toggle checkbox filters (nz-checkbox-wrapper migration)</li><li>Apply Quick Filters</li><li>Confirm the plotted scattergram updates to match the filter selection</li></ol></div></td>
+          <td>Filter checkboxes render and toggle correctly; scattergram plot updates to reflect the selected filters — this is an author-flagged priority visual/behavior check area.</td>
+          <td>University with existing historical scattergram/admit data in the automation tenant catalog.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">University rep form — phone field</span></td>
+          <td>Logged in as a counselor able to add a university representative.</td>
+          <td><div class="steps"><ol><li>Open a University Profile</li><li>Add or edit a University Rep</li><li>Enter a phone number via ngx-intl-tel-input (maxLength now numeric)</li><li>Leave the phone field invalid and confirm the inline error renders (control-flow @if rewrite)</li><li>Correct the number and save</li></ol></div></td>
+          <td>Invalid-phone error message appears/disappears correctly under the new @if block; valid phone saves without truncation.</td>
+          <td>University profile with rep-management permissions enabled for the test counselor.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">Apps — Applications</span><span class="t-surface">Application modals (note / scholarship / conditions / change-portal)</span></td>
+          <td>Logged in as a counselor or student with an existing application.</td>
+          <td><div class="steps"><ol><li>Open an application in Applications v5</li><li>Open the Note modal, add a note, confirm</li><li>Open the Scholarship modal and the Conditions modal, confirm each opens with correct pre-populated data (all migrated from constructor-injected NzModalRef data to NZ_MODAL_DATA)</li><li>Close each modal via cancel and via the X</li></ol></div></td>
+          <td>Each modal opens with the correct data (verifying the constructor-injection-to-NZ_MODAL_DATA migration passed data through correctly), saves/cancels as expected, and closes cleanly both ways.</td>
+          <td>Existing application (any status) with at least one note in the automation tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-010</td>
+          <td><span class="t-mod">Apps — Direct Apply</span><span class="t-surface">Decline offers / UCAS offer modal</span></td>
+          <td>Logged in as a student with a Direct Apply offer.</td>
+          <td><div class="steps"><ol><li>Open Direct Apply for a student with at least one offer</li><li>Open the Decline Offers modal, select a reason, confirm</li><li>Open the UCAS Offer modal for a UCAS-eligible application</li></ol></div></td>
+          <td>Both modals open with correct offer/application data injected via NZ_MODAL_DATA and complete their action (decline / view) without data loss.</td>
+          <td>Direct Apply application with at least one active offer in the automation tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-011</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Counselor Dashboard</span><span class="t-surface">College visit accept/decline + propose-new-time modals</span></td>
+          <td>Logged in as a counselor with a pending college visit request.</td>
+          <td><div class="steps"><ol><li>Open Counselor Dashboard</li><li>Open a pending visit request</li><li>Click Accept, then separately test Decline (with reason popup) and Propose New Time on a second request</li></ol></div></td>
+          <td>All three modals (visit-accept, decline with not-set-availability-reason-popup, propose-new-time) open with correct visit data and submit correctly under the new NZ_MODAL_DATA pattern.</td>
+          <td>At least two pending college-visit requests routed to the test counselor.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-012</td>
+          <td><span class="t-mod">Discovery &amp; Research — Career Exploration</span><span class="t-surface">Careers carousel</span></td>
+          <td>Logged in as a student with career-exploration content available.</td>
+          <td><div class="steps"><ol><li>Open Career Exploration</li><li>Locate the careers carousel</li><li>Navigate forward and backward through carousel items</li><li>Confirm carousel re-mounts correctly if the underlying list loads asynchronously</li></ol></div></td>
+          <td>Carousel renders and paginates identically to before — this now runs on an in-repo app-splide component imperatively driving @splidejs/splide v2, replacing the removed @cialfo/ngx-splide ViewEngine fork.</td>
+          <td>Tenant with career-exploration content/results available for the test student.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-013</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Search &amp; Lists</span><span class="t-surface">University search filter checkboxes</span></td>
+          <td>Logged in as a student or counselor on the university/school search page.</td>
+          <td><div class="steps"><ol><li>Open University Search</li><li>Open the Regions filter, Kick-Start filter, and Course/Major filter dropdowns</li><li>Check/uncheck multiple options in each (nz-checkbox-wrapper migration)</li><li>Apply filters and confirm result list updates</li></ol></div></td>
+          <td>All three filter dropdowns toggle and apply correctly; result list reflects the filter selection with no stuck/ghost checkbox states.</td>
+          <td>None beyond an authenticated session with search access.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-014</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">CDocs document-type / submissions filter dropdowns</span></td>
+          <td>Logged in as a counselor with CDocs access and at least one student with a document/submission.</td>
+          <td><div class="steps"><ol><li>Open CDocs &gt; Documents table</li><li>Open the Document Types filter dropdown and the Submissions &#x27;more filters&#x27; dropdown (both use the nz-checkbox-wrapper migration)</li><li>Toggle several checkboxes and apply</li></ol></div></td>
+          <td>Filter dropdowns render and toggle correctly; applying filters narrows the CDocs table as expected.</td>
+          <td>Student with at least one CDocs document/submission record of a filterable type.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-015</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Round selector tooltip (ngx-popper→nz-tooltip migration)</span></td>
+          <td>Logged in as a counselor viewing the CDocs table with at least one disabled round selector.</td>
+          <td><div class="steps"><ol><li>Open CDocs &gt; Documents table</li><li>Locate a row where the round selector is disabled (cdocs-round.component: migrated from popperTrigger/popperDelay/popperDisabled/popper to nz-tooltip/nzTooltipTrigger/nzTooltipMouseEnterDelay/nzTooltipTitle)</li><li>Hover over the disabled round selector and confirm the tooltip appears after the ~300ms delay, in the correct position, with the disabled-round-deadline text</li><li>Move the mouse away and confirm the tooltip dismisses</li><li>Repeat on a carousel using the shared back-forward-arrows component (e.g. Career Exploration or Student Dashboard) to confirm nav-arrow tooltips still show/hide correctly</li></ol></div></td>
+          <td>Tooltip trigger, delay, placement, and dismiss behavior are unchanged from the ngx-popper implementation on both the CDocs round selector and a shared carousel&#x27;s back-forward-arrows; tooltip only shows when the underlying control is disabled (nzTooltipTrigger is null when not disabled).</td>
+          <td>Student with a CDocs application row that has a disabled round selector (e.g. delivery_method != direct_apply and round-editing restricted); any tenant page with a carousel using back-forward-arrows.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

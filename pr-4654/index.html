@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4654</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4654</div>
+  <div class="h-title">Application year mismtach updates</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4654" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4654</a>
+    <div class="h-date">2026-07-22 · feature/CdocsM2_addon</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">7</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">7</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">CDocs — Documents</span>
+          <span class="im-range">TC-CDOC-038</span>
+          <span class="im-reason">The Application year mismatch banner&#x27;s trigger condition changed from grade-based (Grade 12, or unknown grade, via regex/roman-numeral parsing of `student.grade`) to graduation-year-based (`student.graduation_year == cycleYear + 1`). TC-CDOC-038&#x27;s precondition (&#x27;a student flagged with an application year mismatch&#x27;) no longer maps to a concrete data setup — it must be revised to require a student with graduation_year = current cycle year + 1, not a Grade 12 student. The banner renders on both the Documents and Submission tabs (CdocsProfileBannerComponent), so both surfaces are affected even though only one TC currently exists.</span>
+        </div>
+    </div>
+    
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Counselor is on a student&#x27;s cDocs profile; student&#x27;s graduation_year equals the current application cycle year + 1 (a rising senior); application_year on the student record differs from the cycle year</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s Documents (or Submission) profile tab.</li></ol></div></td>
+          <td>The profile banner shows the Application year mismatch alert.</td>
+          <td>Counselor user; student with graduation_year = cycleYear + 1 and application_year != cycleYear</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student&#x27;s graduation_year equals cycleYear + 1; application_year on the student record equals the cycle year</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert is not shown.</td>
+          <td>Counselor user; student with graduation_year = cycleYear + 1 and application_year == cycleYear</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student&#x27;s graduation_year equals the current cycle year (already graduating this cycle, not next); application_year mismatches the cycle year</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert is not shown, even though application_year mismatches — graduation_year must be exactly cycleYear + 1.</td>
+          <td>Counselor user; student with graduation_year = cycleYear and a mismatched application_year</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student&#x27;s graduation_year is two cycles out (cycleYear + 2); application_year mismatches</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert is not shown.</td>
+          <td>Counselor user; student with graduation_year = cycleYear + 2 and a mismatched application_year</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student&#x27;s graduation_year is null/missing; application_year mismatches the cycle year</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert is NOT shown. This is a behavior flip from before this PR: previously an unknown grade was treated like Grade 12 and would show the alert on mismatch; a missing graduation_year now hides it. Confirm this is the intended product behavior, since it silently suppresses the alert for any student profile missing graduation_year data.</td>
+          <td>Counselor user; student with graduation_year = null and a mismatched application_year</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student is in a lower grade (e.g. Grade 7) but graduation_year happens to equal cycleYear + 1; application_year mismatches</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert IS shown, because grade is now ignored entirely — only graduation_year drives eligibility. This is the highest regression risk of the change: any underclassman whose record has graduation_year prematurely set to next cycle&#x27;s year will now surface an adult-facing &#x27;Application year mismatch&#x27; banner that previously only applied to seniors.</td>
+          <td>Counselor user; student with grade = 7 (or any non-12), graduation_year = cycleYear + 1, and a mismatched application_year</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">Profile banner — Application year mismatch</span></td>
+          <td>Student&#x27;s graduation_year is stored as a numeric string (e.g. &quot;2027&quot;) equal to cycleYear + 1; application_year mismatches</td>
+          <td><div class="steps"><ol><li>Load the student&#x27;s profile.</li></ol></div></td>
+          <td>The Application year mismatch alert is still shown — the comparison uses loose equality (`==`), so a string graduation_year matching numerically still triggers it. Flagged as a fragility risk: any non-numeric-looking value (extra whitespace, different type) from the API would silently fail the match with no error.</td>
+          <td>Counselor user; student with graduation_year = &quot;cycleYear + 1&quot; (string) and a mismatched application_year</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

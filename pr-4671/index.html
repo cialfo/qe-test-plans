@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4671</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4671</div>
+  <div class="h-title">feat(loading): unified loader system across the app</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4671" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4671</a>
+    <div class="h-date">2026-07-22 · update-loaders-for-cialfo-and-kaaiser</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">27</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">27</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Auth — Authentication</span>
+          <span class="im-range">TC-AUTH-001–045</span>
+          <span class="im-reason">Boot splash rewritten (route-aware rotating status copy, brand logo via environment.logoURL, fill-then-fade exit) sits in front of every login/session-check flow; auth.service.ts changed for SKIP_LOADING_BAR wiring on the 60s session-check poll.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Auth — Onboarding</span>
+          <span class="im-range">TC-ONBRD-001–035</span>
+          <span class="im-reason">Boot splash &#x27;auth&#x27; status-copy pool matches /student-welcome path; onboarding entry is behind the same splash and route progress bar.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Counselor Dashboard</span>
+          <span class="im-range">TC-CDASH-001–066</span>
+          <span class="im-reason">counselor-dashboard has 16 changed files — first-load spinners converted to layout-mirroring skeletons; boot splash &#x27;dashboard&#x27; pool matches counselor_dashboard route.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Student Dashboard</span>
+          <span class="im-range">TC-STUD-001–081</span>
+          <span class="im-reason">student-dashboard has 10 changed files converting spinners to skeletons; boot splash &#x27;dashboard&#x27; pool matches /home route.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-001–118</span>
+          <span class="im-reason">university-profile (27 files) and full-school-page (10 files, incl. student-data-scattergram-v2 destroyed-Highcharts guard, notes-card, add-school-tags) both convert first-load spinners to skeletons on this surface.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">CDocs — Documents</span>
+          <span class="im-range">TC-CDOC-001–062</span>
+          <span class="im-reason">cdocs (26 files) — cdocs-table-loading, upload/fee-waiver/UCAS-reference-letter sidebars, submission cards across Common App/Parchment/transcripts converted to skeletons; fluid table-skeleton cell fix listed in PR description.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Apps — Applications</span>
+          <span class="im-range">TC-APPL-001–074</span>
+          <span class="im-reason">applications-v5 has 26 changed files converting first-load spinners to skeletons.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Courses</span>
+          <span class="im-range">TC-CRS-001–071</span>
+          <span class="im-reason">course-search (14 files) and full-school-page&#x27;s program-details-page (route students/:id/research_new/:schoolId/programs/:programId) both touched; program-details-loading component present.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Student List</span>
+          <span class="im-range">TC-STUL-001–081</span>
+          <span class="im-reason">student-list has 7 changed files; peoples-page/people-table.component.ts (shared by People — Team&#x27;s /people/all list) also changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Team</span>
+          <span class="im-range">TC-PPL-001–062</span>
+          <span class="im-reason">add-people-page.component.ts changed (Add/Edit/Settings shared component per people-team/add-edit-settings.md); peoples-page/people-table.component.ts backs the /people/all list.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Groups</span>
+          <span class="im-range">TC-GRP-001–036</span>
+          <span class="im-reason">groups has 6 changed files converting first-load spinners to skeletons.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Bulk Uploads / Imports</span>
+          <span class="im-range">TC-BLKU-001–052</span>
+          <span class="im-reason">bulk-uploads has 8 changed files; PR description explicitly calls out bulk-uploads in the ~125 spinner-to-skeleton conversion list.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — Hubs / Community &amp; Content</span>
+          <span class="im-range">TC-HUB-001–076</span>
+          <span class="im-reason">counselor-hubs (10 files) and student-hubs (2 files) both converted; PR description lists &#x27;hubs&#x27; explicitly.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — Events &amp; Webinars</span>
+          <span class="im-range">TC-EVT-001–061</span>
+          <span class="im-reason">events has 8 changed files; PR description lists &#x27;events&#x27; explicitly in the skeleton-conversion set.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Meetings</span>
+          <span class="im-range">TC-MEET-001–051</span>
+          <span class="im-reason">meetings has 8 changed files; PR description lists &#x27;meetings&#x27; explicitly.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — College Visits</span>
+          <span class="im-range">TC-CVIS-001–068</span>
+          <span class="im-reason">college-visits has 8 changed files converting spinners to skeletons.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — College Compare</span>
+          <span class="im-range">TC-CCOM-001–072</span>
+          <span class="im-reason">compare-university has 6 changed files; also consumes add-application-modal (components/common) which changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Cialfo Mail / Explore Mail</span>
+          <span class="im-range">TC-MAIL-001–004</span>
+          <span class="im-reason">cialfo-mail has 6 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Broadcasts</span>
+          <span class="im-range">TC-BCT-001–059</span>
+          <span class="im-reason">broadcasts has 4 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Inbox / Messaging</span>
+          <span class="im-range">TC-INB-001–047</span>
+          <span class="im-reason">inbox has 2 changed files; shares direct-apply.service.ts / da-sdk.service.ts, both changed under @core/services.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Communications — Help Center &amp; Guides</span>
+          <span class="im-range">TC-HCG-001–046</span>
+          <span class="im-reason">cialfo-guides has 2 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Apps — Direct Apply</span>
+          <span class="im-range">TC-DA-001–099</span>
+          <span class="im-reason">direct-apply has 4 changed files; direct-apply.service.ts and da-sdk.service.ts (both settle-window LoadingService wiring per PR description) live under @core/services and are shared by this module.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Career Exploration</span>
+          <span class="im-range">TC-CAR-001–061</span>
+          <span class="im-reason">careers has 4 changed files; careers.service.ts under @core/services changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — Scholarships</span>
+          <span class="im-range">TC-SCHL-001–049</span>
+          <span class="im-reason">explore-scholarships has 4 changed files; also consumes add-application-modal (components/common) which changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Assessments</span>
+          <span class="im-range">TC-ASMT-001–038</span>
+          <span class="im-reason">assessments has 4 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Surveys</span>
+          <span class="im-range">TC-SURV-001–092</span>
+          <span class="im-reason">surveys has 4 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Tasks</span>
+          <span class="im-range">TC-TASK-001–106</span>
+          <span class="im-reason">student-tasks (4 files) and tasks-resources (4 files) both changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Admin Overview</span>
+          <span class="im-range">TC-ADMO-001–020</span>
+          <span class="im-reason">admin-overview has 2 changed files.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — BI &amp; Analytics</span>
+          <span class="im-range">TC-BIANA-001–027</span>
+          <span class="im-reason">canva-report.component.ts changed — this is the Cialfo Usage Report PDF-export surface reached from BI &amp; Analytics&#x27; Quick Reports &#x27;View report&#x27; CTA per docs/bi-analytics/usage-report.md.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Engagement — University Quest &amp; Gamification</span>
+          <span class="im-range">TC-QUEST-001–054</span>
+          <span class="im-reason">onboarding-quiz has 6 changed files (student quiz result page uses university-quest per docs/onboarding/quiz-result.md).</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Counseling &amp; Tasks — Tags &amp; Flags</span>
+          <span class="im-range">TC-TAGF-001–004</span>
+          <span class="im-reason">university-tags-page/drawer changed — this is the Tags &amp; Flags module&#x27;s University Tags management page per docs/tags-flags/overview.md.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Search &amp; Lists</span>
+          <span class="im-range">TC-USRL-001–066</span>
+          <span class="im-reason">school-search (5 files) and university-common (6 files, shared search-filters/region-filter used by course-search, explore-scholarships, school-search) changed; universal-search-page and universal-search-bar (components/common) also changed.</span>
+        </div>
+    </div>
+    
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Cross-cutting — Boot Splash</span><span class="t-surface">Boot splash (cold load) — brand-neutral rotating status copy</span></td>
+          <td>Fresh browser session (no cached app shell); staging Cialfo-branded tenant.</td>
+          <td><div class="steps"><ol><li>Hard-reload (disable cache) a URL matching the &#x27;dashboard&#x27; pool, e.g. /app/home, on a throttled network (Slow 3G) so the splash is visible for several seconds.</li><li>Observe the initial status line under the breathing logo.</li><li>Wait 2.5s+ increments and observe subsequent lines.</li><li>Wait until total elapsed time on the splash exceeds 4s.</li></ol></div></td>
+          <td>Status line shows a phrase from the &#x27;dashboard&#x27; pool (e.g. &#x27;Loading your dashboard…&#x27;, &#x27;Gathering your latest updates…&#x27;) on first paint — never a blank/&#x27;Loading…&#x27; flash. It rotates every ~2.5s without repeating the immediately-previous phrase (when the pool has &gt;1 entry). After 4s elapsed, the pool switches to the &#x27;slow&#x27; set (e.g. &#x27;Almost there…&#x27;, &#x27;Still working on it…&#x27;).</td>
+          <td>None — no auth required to observe the pre-bootstrap splash.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Cross-cutting — Boot Splash</span><span class="t-surface">Boot splash brand logo — Cialfo vs Flow AI</span></td>
+          <td>Access to both a Cialfo-branded tenant and a Flow AI-branded tenant (or Kaaiser) in staging.</td>
+          <td><div class="steps"><ol><li>Hard-reload the Cialfo-branded tenant URL and observe the splash logo before app bootstrap completes.</li><li>Hard-reload the Flow AI-branded (Kaaiser) tenant URL and observe the splash logo.</li></ol></div></td>
+          <td>Cialfo tenant shows the Cialfo logo; Flow AI/Kaaiser tenant shows the Flow AI logo — both set via `environment.logoURL` in main.ts before Angular bootstrap, matching each brand&#x27;s normal in-app branding.</td>
+          <td>One user account per brand/tenant (Cialfo and Flow AI/Kaaiser).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Cross-cutting — Boot Splash</span><span class="t-surface">Boot splash auth-path status copy</span></td>
+          <td>Logged out.</td>
+          <td><div class="steps"><ol><li>Hard-reload a sign-in URL (path matching /auth|sign-?in|sign-?up|password|student-welcome/) on a throttled network.</li><li>Observe the splash status line.</li></ol></div></td>
+          <td>Status line is drawn from the &#x27;auth&#x27; pool (e.g. &#x27;Rolling out the welcome mat…&#x27;, &#x27;Unlocking the doors…&#x27;), not the &#x27;dashboard&#x27; or &#x27;workspace&#x27; pool.</td>
+          <td>None.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Cross-cutting — Boot Splash</span><span class="t-surface">Boot splash blocked-tenant status copy</span></td>
+          <td>A tenant in a &#x27;frozen&#x27;/payment-due state reachable via a /tenant-frozen or /payment-due path.</td>
+          <td><div class="steps"><ol><li>Hard-reload the frozen-tenant URL on a throttled network.</li><li>Observe the splash status line.</li></ol></div></td>
+          <td>Status line is drawn from the &#x27;blocked&#x27; pool only (&#x27;Just a moment…&#x27; / &#x27;Hold tight…&#x27;), not the workspace/dashboard/auth pools.</td>
+          <td>A tenant flagged frozen/payment-due in staging (coordinate with @qe-lead if none exists).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">Cross-cutting — Route Progress Bar</span><span class="t-surface">Route progress bar — settle-window behavior on a data-bearing page nav</span></td>
+          <td>Logged in as Counselor. App already bootstrapped (past boot splash).</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G in devtools.</li><li>Navigate from Counselor Dashboard to Student List (a page whose first-load GET fires after NavigationEnd).</li><li>Observe the top-of-viewport progress bar from the moment navigation starts.</li></ol></div></td>
+          <td>The bar does not appear for loads under ~300ms (no flash on fast navigations). For this slower nav: it becomes visible, trickles indeterminately toward but never fully reaching 100% while the settling window (nav + first-load HTTP requests) is open, then snaps to 100% and fades out only after the tracked requests drain — not immediately on NavigationEnd. Total time the bar is held open is capped (never spins indefinitely, hard ceiling 10s even under a hung request).</td>
+          <td>None beyond a Counselor account with at least one student in the list.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">Cross-cutting — Route Progress Bar</span><span class="t-surface">Route progress bar — SKIP_LOADING_BAR exclusion (session check / polling)</span></td>
+          <td>Logged in, app idle on any page for over 60s so the periodic session-check poll fires.</td>
+          <td><div class="steps"><ol><li>Log in and leave the app idle on a static page (no user-triggered navigation or request) for at least 65 seconds.</li><li>Watch the top-of-viewport area the whole time via devtools Network tab filtered to the session-check endpoint.</li></ol></div></td>
+          <td>The periodic session-check request fires (visible in Network tab) but the route progress bar never appears or ticks in response to it — SKIP_LOADING_BAR excludes it from noteRequestStart/noteRequestEnd accounting.</td>
+          <td>None.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Cross-cutting — Route Progress Bar</span><span class="t-surface">Route progress bar — rapid re-navigation collapses into one cycle</span></td>
+          <td>Logged in as Counselor.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Start navigating to Student Profile, then before that page&#x27;s load settles, immediately navigate again to a different Student Profile.</li><li>Observe the progress bar across both navigations.</li></ol></div></td>
+          <td>The bar stays visible continuously across both navigations as one cycle — it does not reset to 0%/re-trigger the show-delay or flicker hidden-then-shown between the two navigations (start()/finish() are reference-counted per the service).</td>
+          <td>At least two distinct student profiles for the Counselor to navigate between.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Counselor Dashboard</span><span class="t-surface">Counselor Dashboard first-load skeleton</span></td>
+          <td>Logged in as Counselor with dashboard widgets populated (students, deadlines, etc).</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Counselor Dashboard.</li><li>Observe the loading state before data resolves.</li></ol></div></td>
+          <td>Dashboard widgets show layout-mirroring skeleton placeholders (shimmer) matching each widget&#x27;s final shape, not a generic centered nz-spin spinner. Once data loads, skeletons are replaced by real content with no layout shift.</td>
+          <td>Counselor account with at least one active student assigned so dashboard widgets render non-empty.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Student Dashboard</span><span class="t-surface">Student Dashboard first-load skeleton</span></td>
+          <td>Logged in as Student with dashboard data present.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Student Dashboard.</li><li>Observe the loading state before data resolves.</li></ol></div></td>
+          <td>Dashboard sections show layout-mirroring skeletons, not the old spinner. Content swap-in causes no layout shift; no residual skeleton shimmer remains after data has loaded.</td>
+          <td>Student account with dashboard content (at least one saved application or task) so sections render populated.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-010</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">University Profile scattergram — destroyed-Highcharts guard</span></td>
+          <td>Logged in as Counselor viewing a Full School Page with `can_university_search_students_view_scattergram` permission enabled for a student.</td>
+          <td><div class="steps"><ol><li>Open a university&#x27;s Full School Page for a student, scroll to the Scattergram section, and let it render fully (chart visible).</li><li>Immediately navigate away (e.g. click browser Back or another nav link) while the Highcharts chart is still rendering/animating.</li><li>Repeat rapid navigate-away 3–4 times in a row across different universities.</li><li>Check the browser console for errors.</li></ol></div></td>
+          <td>No console errors/exceptions from Highcharts attempting to update a destroyed chart instance (the PR adds a destroyed-Highcharts guard in scattergrams). The app remains responsive with no stuck loading state on return.</td>
+          <td>A student with `can_university_search_students_view_scattergram` enabled and at least 2 target universities to navigate between.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-011</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Full School Page notes-card and add-school-tags first-load skeleton</span></td>
+          <td>Logged in as Counselor on a Full School Page with existing notes and tags for the university.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to a Full School Page that has existing notes and tags.</li><li>Observe the Notes card and the Add-School-Tags control while their data is still loading.</li></ol></div></td>
+          <td>Notes card and tags control show skeleton placeholders (not a spinner) sized to their final content, then populate without layout jump once loaded.</td>
+          <td>A university with at least one note and one assigned tag.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-012</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">CDocs table first-load skeleton and fluid cell sizing</span></td>
+          <td>Logged in as Counselor viewing a student&#x27;s CDocs submissions table with multiple rows across Common App, Parchment, and UCAS submission types.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Open a student&#x27;s CDocs table (cdocs-table).</li><li>Observe the loading state, then resize the browser window narrower/wider while the table is populated.</li><li>Check that table-skeleton cells and populated cells both remain aligned to column widths at each size.</li></ol></div></td>
+          <td>Table shows cdocs-table-loading skeleton rows shaped like the real table (not a spinner) during first load. After load, cells reflow fluidly with the resized column widths with no fixed-width skeleton artifacts left over (PR description: &#x27;fluid table-skeleton cells&#x27; fix).</td>
+          <td>A student with submissions across at least 2 of: Common App, Parchment, transcripts, UCAS.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-013</td>
+          <td><span class="t-mod">CDocs — Documents</span><span class="t-surface">CDocs upload / fee-waiver / UCAS reference letter sidebars — loading state</span></td>
+          <td>Logged in as Admin with access to open the Upload, Fee Waiver, and UCAS Reference Letter sidebars for a student&#x27;s CDocs form.</td>
+          <td><div class="steps"><ol><li>Open a student&#x27;s CDocs form host and launch the Upload sidebar; observe its loading state while it initializes.</li><li>Close it, open the Fee Waiver sidebar; observe its loading state.</li><li>Close it, open the UCAS Reference Letter sidebar; observe its loading state.</li></ol></div></td>
+          <td>Each sidebar shows the app&#x27;s canonical loading primitive (skeleton or app-spinner, not the old nz-spin default styling) while initializing, and each sidebar&#x27;s Save/submit action still functions identically to before (APIs unchanged per PR description).</td>
+          <td>A student eligible for fee waiver and with a UCAS reference letter requirement configured.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-014</td>
+          <td><span class="t-mod">Apps — Applications</span><span class="t-surface">Applications list first-load skeleton</span></td>
+          <td>Logged in as Student with multiple saved/finalized applications.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Applications page (applications-v5).</li><li>Observe the loading state before the application cards render.</li></ol></div></td>
+          <td>Application cards area shows list/card-mirroring skeletons, not a spinner. Cards populate without layout shift once data loads.</td>
+          <td>Student with at least 3 saved applications across different statuses.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-015</td>
+          <td><span class="t-mod">Discovery &amp; Research — Courses</span><span class="t-surface">Program Details page — action-spinner retained (not converted to skeleton)</span></td>
+          <td>Logged in as Student viewing a course&#x27;s Program Detail page (programs/:programId) for a program with `has_profile = true`.</td>
+          <td><div class="steps"><ol><li>Open a course&#x27;s Program Detail page from the catalogue &#x27;View details&#x27; CTA.</li><li>Observe the initial page load (should show the layout-mirroring skeleton per program-details-loading.component).</li><li>Once loaded, trigger the &#x27;Add application&#x27; action (or an equivalent refetch action) and observe its loading indicator.</li></ol></div></td>
+          <td>Initial full-page load shows a layout-mirroring skeleton (program-details-loading). The &#x27;Add application&#x27; action-triggered loading state remains a small action spinner (per PR description, action/refetch/pagination spinners were intentionally kept, not converted) — it does not replace the whole page with a skeleton.</td>
+          <td>A course/program with `has_profile = true`; a student eligible to add an application (`can_finalized_school = true` context).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-016</td>
+          <td><span class="t-mod">People — Student List</span><span class="t-surface">Student List / People table — first-load skeleton and pagination spinner distinction</span></td>
+          <td>Logged in as Counselor with more students than fit on one page.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Student List (or /people/all, backed by the same people-table component).</li><li>Observe the loading state on first load.</li><li>Once loaded, change to page 2 and observe the loading indicator during pagination.</li></ol></div></td>
+          <td>First load shows a layout-mirroring table skeleton. Paginating to page 2 shows a lightweight pagination-specific loading indicator (kept as a spinner per PR description), not a full-table skeleton re-render.</td>
+          <td>Tenant with enough students to require at least 2 pages in the list.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-017</td>
+          <td><span class="t-mod">People — Bulk Uploads / Imports</span><span class="t-surface">Bulk Uploads first-load skeleton</span></td>
+          <td>Logged in as Admin with at least one prior bulk upload job in history.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to Bulk Uploads / Imports.</li><li>Observe the loading state before the upload history/table renders.</li></ol></div></td>
+          <td>Upload history area shows a table/list skeleton, not a spinner, then populates without layout shift.</td>
+          <td>At least one completed bulk upload job on the tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-018</td>
+          <td><span class="t-mod">Engagement — Hubs / Community &amp; Content</span><span class="t-surface">Counselor Hubs and Student Hubs first-load skeleton</span></td>
+          <td>Logged in as Counselor (for Counselor Hubs) and separately as Student (for Student Hubs), tenant has hub content configured.</td>
+          <td><div class="steps"><ol><li>As Counselor: throttle to Slow 3G, navigate to Counselor Hubs, observe loading state.</li><li>As Student: throttle to Slow 3G, navigate to Student Hubs, observe loading state.</li></ol></div></td>
+          <td>Both surfaces show layout-mirroring skeletons (card/list shaped) during first load instead of the previous spinner; content swaps in without layout shift.</td>
+          <td>Tenant with at least one published hub/community content item visible to both roles.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-019</td>
+          <td><span class="t-mod">Engagement — Events &amp; Webinars</span><span class="t-surface">Events list first-load skeleton</span></td>
+          <td>Logged in as Student or Counselor, tenant has at least one upcoming event.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Events page.</li><li>Observe loading state before event cards render.</li></ol></div></td>
+          <td>Event cards area shows a card-skeleton, not a spinner, replaced by real cards on load with no layout shift.</td>
+          <td>At least one published upcoming event on the tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-020</td>
+          <td><span class="t-mod">Counseling &amp; Tasks — Meetings</span><span class="t-surface">Meetings list first-load skeleton</span></td>
+          <td>Logged in as Counselor with at least one scheduled meeting.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to Meetings.</li><li>Observe loading state before the meetings list renders.</li></ol></div></td>
+          <td>Meetings list shows a list-skeleton during first load, not a spinner; populates without layout shift.</td>
+          <td>At least one scheduled meeting for the Counselor.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-021</td>
+          <td><span class="t-mod">Counseling &amp; Tasks — College Visits</span><span class="t-surface">College Visits list first-load skeleton</span></td>
+          <td>Logged in as Counselor with at least one scheduled college visit.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to College Visits.</li><li>Observe loading state before the list renders.</li></ol></div></td>
+          <td>College Visits list shows a list-skeleton, not a spinner, during first load; populates without layout shift.</td>
+          <td>At least one scheduled college visit on the tenant.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-022</td>
+          <td><span class="t-mod">Discovery &amp; Research — College Compare</span><span class="t-surface">Compare University page — add-application-modal loading state</span></td>
+          <td>Logged in as Student comparing 2+ universities, at least one eligible for a new application.</td>
+          <td><div class="steps"><ol><li>Open Compare University with 2+ universities loaded.</li><li>Trigger &#x27;Add application&#x27; via the shared add-application-modal.</li><li>Observe the modal&#x27;s loading indicator while it submits.</li></ol></div></td>
+          <td>The modal&#x27;s submit-loading indicator uses the canonical app-spinner/app-button [loading] primitive (re-skinned per PR, APIs unchanged) and the add-application flow completes and closes the modal exactly as before.</td>
+          <td>Student with 2+ universities loaded for comparison, at least one not yet applied to.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-023</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — BI &amp; Analytics</span><span class="t-surface">Cialfo Usage Report (canva-report) — PDF export loading state unaffected</span></td>
+          <td>Logged in as Admin on a tenant with usage data; access to Quick Reports.</td>
+          <td><div class="steps"><ol><li>Navigate to BI &amp; Analytics → Quick Reports, click &#x27;View report&#x27; to open /canva-report.</li><li>Observe the page&#x27;s own first-load state (should now show the canonical loader, not the prior implementation).</li><li>Click &#x27;Download PDF&#x27; and observe the &#x27;Generating PDF...&#x27; toast and resulting download.</li></ol></div></td>
+          <td>Page-load spinner/skeleton follows the new canonical primitives. The PDF-generation toast text and behavior (&#x27;Generating PDF...&#x27; → file downloaded as `&lt;subdomain&gt;-report-&lt;timestamp&gt;.pdf`) are unchanged — this flow uses html2canvas/jsPDF directly and must not be broken by the loader refactor.</td>
+          <td>Admin account on a tenant with at least some usage data so the report is non-empty.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-024</td>
+          <td><span class="t-mod">Counseling &amp; Tasks — Tags &amp; Flags</span><span class="t-surface">University Tags management page and drawer — loading state</span></td>
+          <td>Logged in as Counselor or Admin, tenant has at least 2 existing tags.</td>
+          <td><div class="steps"><ol><li>Navigate to schools/university-tags.</li><li>Observe the page&#x27;s loading state before the tag list renders.</li><li>Open the University Tags drawer for one tag and observe its loading state.</li></ol></div></td>
+          <td>Both the page and the drawer show the canonical skeleton/spinner (per changed component), and all existing Tags &amp; Flags actions (create/edit/archive/assign colleges) continue to work identically post-refactor.</td>
+          <td>At least 2 existing tags, one with colleges assigned.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-025</td>
+          <td><span class="t-mod">Global Chrome — Navigation</span><span class="t-surface">Universal search bar loading state (top-nav)</span></td>
+          <td>Logged in as any role with the global search bar visible in top navigation.</td>
+          <td><div class="steps"><ol><li>Click the global search bar and type a query with at least 2 characters.</li><li>Observe the in-progress loading indicator inside the search bar/dropdown while results are fetched.</li><li>Submit to navigate to the full Universal Search results page and observe its own loading state.</li></ol></div></td>
+          <td>Search-bar dropdown shows the canonical small loading indicator while fetching suggestions; the full results page (/search) shows the appropriate skeleton/spinner for the results grid, matching the pre-existing 7-content-type grouped layout with no regression in result grouping or anchor-tab navigation.</td>
+          <td>A search term with results across at least 2 of the 7 content types (e.g. a university name and a matching guide).</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-026</td>
+          <td><span class="t-mod">Cross-cutting — Global Restyle (nz-spin / nz-skeleton)</span><span class="t-surface">Legitimate action/refetch spinners retained across the app</span></td>
+          <td>Logged in as any role; any page with a simple button-triggered action that does not do a full page reload (e.g. saving a form field, refreshing a widget).</td>
+          <td><div class="steps"><ol><li>Trigger a simple save/refresh action on any form (e.g. edit a student profile field and save).</li><li>Observe the button/action-level loading indicator during the request.</li></ol></div></td>
+          <td>The action-level spinner still appears (re-skinned to the new conic accent-ring style per PR description) and is NOT replaced by a full-section skeleton — the PR explicitly keeps action/refetch/pagination spinners distinct from first-load skeletons.</td>
+          <td>Any editable field on a profile or form the logged-in role can modify.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-027</td>
+          <td><span class="t-mod">Cross-cutting — Global Restyle (nz-spin / nz-skeleton)</span><span class="t-surface">Overlay-positioning fix verification on a modal with a loading overlay</span></td>
+          <td>Logged in; any modal that shows a loading overlay while submitting (e.g. add-application-modal, tagging-collection-confirmation-modal).</td>
+          <td><div class="steps"><ol><li>Open a modal that shows a loading overlay on submit (e.g. Add Application modal).</li><li>Resize the browser window to a few different widths (e.g. 1440px, 1024px, mobile-breakpoint width) before triggering submit.</li><li>At each width, trigger the submit action and observe the overlay&#x27;s position relative to the modal content.</li></ol></div></td>
+          <td>The loading overlay is correctly centered/positioned over the modal content at every tested width — no visual misalignment (PR description: &#x27;Fixes: 13 overlay-positioning bugs&#x27;).</td>
+          <td>Any modal action reachable by the logged-in role that shows a submit-loading overlay.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

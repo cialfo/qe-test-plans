@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">13</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">13</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">14</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">14</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -84,7 +84,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <div class="impact-row">
           <span class="im-module">Communications — Notifications</span>
           <span class="im-range">TC-NOTIF-001–048</span>
-          <span class="im-reason">Notifications and the Activity Feed page share the same /v4/feeds/activities data and ActivityFeedsService state; the new dismiss action mutates local feed state (optimistic removal, deadline count, pagination reload) that Notifications TCs assume is otherwise read-only.</span>
+          <span class="im-reason">Notifications and the Activity Feed page share the same /v4/feeds/activities data and ActivityFeedsService state; the new dismiss action mutates local feed state (optimistic removal, deadline count, pagination reload, in-flight reload cancellation) that Notifications TCs assume is otherwise read-only.</span>
         </div>
         <div class="impact-row">
           <span class="im-module">Dashboards &amp; Reports — Activity Reports</span>
@@ -98,7 +98,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       
         <div class="new-row">
           <div class="new-dot"></div>
-          <div class="new-text"><span class="new-module">Dashboards &amp; Reports — Activity Reports</span> — Per-item dismiss (×) control on the Activity Feed page&#x27;s feed list — hover-revealed, keyboard-reachable (Tab/Enter/Space), calls PUT /v4/feeds/activities/:id/dismiss, optimistically updates local state with rollback on failure, and reconciles pagination via a full reload of previously-loaded pages.</div>
+          <div class="new-text"><span class="new-module">Dashboards &amp; Reports — Activity Reports</span> — Per-item dismiss (×) control on the Activity Feed page&#x27;s feed list — hover-revealed, keyboard-reachable (Tab/Enter/Space), calls PUT /v4/feeds/activities/:id/dismiss, optimistically updates local state with rollback on failure, guards duplicate in-flight dismisses of the same item, cancels a stale in-flight reload when a different item is dismissed before the first reload resolves, and reconciles pagination via a full reload of previously-loaded pages.</div>
         </div>
     </div>
   </div>
@@ -236,6 +236,15 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><div class="steps"><ol><li>After a failed dismiss rolls the item back, click the dismiss (×) button again on the same item, this time allowing the request to succeed.</li></ol></div></td>
           <td>The retry dismiss succeeds — the item is removed and does not reappear; the earlier in-flight guard does not permanently lock the item out from being dismissed again after a failure.</td>
           <td>Same feed item as TP-012, retried with a successful backend response the second time.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-014</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Activity Reports</span><span class="t-surface">Activity Feed page — rapid sequential dismiss of different items does not resurrect or duplicate rows</span></td>
+          <td>2+ feed items with distinct ids; ability to delay/throttle the network response for the reload GET request that follows a successful dismiss PUT.</td>
+          <td><div class="steps"><ol><li>Dismiss item A and let its dismiss PUT succeed, but delay the reload GET it triggers so it stays in flight.</li><li>Before that reload GET resolves, dismiss item B (a different item) and let its PUT and reload proceed.</li><li>Allow the delayed reload for item A to resolve last.</li><li>Observe the final feed list.</li></ol></div></td>
+          <td>Only the later reload (triggered by dismissing item B) is applied to the list; the earlier, now-stale reload for item A is cancelled/ignored so it cannot re-append item B or produce duplicate rows — neither A nor B is present in the final list.</td>
+          <td>2+ activity feed items with distinct ids, and the ability to sequence/delay the two reload GET responses (e.g. via throttled or manually-controlled network mocking).</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

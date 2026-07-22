@@ -70,8 +70,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </div>
 <div class="main">
   <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">27</div></div>
-    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">27</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">30</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">30</div></div>
     <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
     <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
   </div>
@@ -240,6 +240,21 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <span class="im-module">Discovery &amp; Research — University Search &amp; Lists</span>
           <span class="im-range">TC-USRL-001–066</span>
           <span class="im-reason">school-search (5 files) and university-common (6 files, shared search-filters/region-filter used by course-search, explore-scholarships, school-search) changed; universal-search-page and universal-search-bar (components/common) also changed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">People — Settings / Configuration</span>
+          <span class="im-range">TC-CFG-001–099</span>
+          <span class="im-reason">application-portals-configurations.component.ts (Order of appearance of application portals subsection, per docs/settings-configuration/applications.md) imports ListSkeletonComponent and NzSpinComponent and gates isLoading/finalize() — a genuine skeleton conversion on a real settings subsection.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Dashboards &amp; Reports — Admin Overview</span>
+          <span class="im-range">TC-ADMO-001–020</span>
+          <span class="im-reason">get-started.component.ts (route get_started_pro, a top-level private route alongside &#x27;admin&#x27;) adds contentLoaded gating + a 3-row accordion skeleton (accordionSkeletonRows) — bucketed under Admin Overview as the closest route-family match; NO dedicated FE doc exists for this &#x27;Get Started Pro&#x27; page (checked docs/admin-overview/, docs/onboarding/, docs/student-dashboard/) — doc-gap flagged to @qe-lead.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">CDocs — Delivery Integrations</span>
+          <span class="im-range">TC-CDEL-001–074</span>
+          <span class="im-reason">application-followups/pages/application-followups/application-followups.component.ts (route :student_id/application-followups, menuId applicationFollowups) imports ListSkeletonComponent. Distinct component/route from the existing TC-CDEL-007 cDocs &#x27;Follow Ups&#x27; tab (CdocsDocumentsComponent tab 5, docs/delivery/follow-ups.md) and from manage-applications — bucketed here as the closest follow-ups domain match; NO dedicated FE doc exists for this standalone page — doc-gap flagged to @qe-lead.</span>
         </div>
     </div>
     
@@ -504,6 +519,33 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><div class="steps"><ol><li>Open a modal that shows a loading overlay on submit (e.g. Add Application modal).</li><li>Resize the browser window to a few different widths (e.g. 1440px, 1024px, mobile-breakpoint width) before triggering submit.</li><li>At each width, trigger the submit action and observe the overlay&#x27;s position relative to the modal content.</li></ol></div></td>
           <td>The loading overlay is correctly centered/positioned over the modal content at every tested width — no visual misalignment (PR description: &#x27;Fixes: 13 overlay-positioning bugs&#x27;).</td>
           <td>Any modal action reachable by the logged-in role that shows a submit-loading overlay.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-028</td>
+          <td><span class="t-mod">People — Settings / Configuration</span><span class="t-surface">Order of appearance of application portals — first-load loading state</span></td>
+          <td>Logged in as Admin on a tenant with 2+ application portals to order (e.g. Direct Apply + UCAS).</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to Settings / Configuration → Applications → Order of appearance of application portals subsection.</li><li>Observe the subsection&#x27;s loading state before the portal-order badges render.</li></ol></div></td>
+          <td>The subsection shows a skeleton/spinner (per the changed component&#x27;s ListSkeletonComponent/NzSpinComponent gating) while isLoading is true, then renders the draggable portal badges with no layout shift. Saving a reorder still shows the existing toast &quot;Application preferences updated successfully&quot;.</td>
+          <td>A tenant with at least 2 application portals configured so the ordering subsection renders.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-029</td>
+          <td><span class="t-mod">Dashboards &amp; Reports — Admin Overview</span><span class="t-surface">&quot;Get Started Pro&quot; accordion — first-load skeleton</span></td>
+          <td>Logged in as a role with access to the get_started_pro route.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to the Get Started Pro page (get_started_pro).</li><li>Observe the accordion area before the Contentful-backed content resolves.</li></ol></div></td>
+          <td>Exactly 3 skeleton placeholder rows (accordionSkeletonRows) mirror the collapsed accordion cards while contentLoaded is false; once the fetch settles (success or failure) the skeleton is replaced by real accordion content with no residual shimmer. No dedicated FE reference doc exists for this page — flag to @qe-lead as a doc gap independent of this PR.</td>
+          <td>None beyond an account permitted to view get_started_pro.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-030</td>
+          <td><span class="t-mod">CDocs — Delivery Integrations</span><span class="t-surface">Application Follow-Ups page — first-load skeleton</span></td>
+          <td>Logged in as Counselor with at least one student who has pending application follow-ups.</td>
+          <td><div class="steps"><ol><li>Throttle network to Slow 3G.</li><li>Navigate to a student&#x27;s Application Follow-Ups page (:student_id/application-followups).</li><li>Observe the loading state before the follow-up cards render.</li></ol></div></td>
+          <td>The page shows a list-mirroring skeleton (ListSkeletonComponent), not a spinner, replaced by real follow-up cards with no layout shift once data loads. This is a distinct component/route from the existing cDocs &#x27;Follow Ups&#x27; tab (TC-CDEL-007) — both should be spot-checked independently. No dedicated FE reference doc exists for this standalone page — flag to @qe-lead as a doc gap independent of this PR.</td>
+          <td>A student with at least one open application follow-up request from a university.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>

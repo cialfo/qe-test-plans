@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — PR #4689</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0A0A0A;--surface:#111111;--surface-2:#1A1A1A;--border:#222222;--border-2:#2A2A2A;--text:#EEEEEE;--text-2:#999999;--text-3:#555555;--accent:#5B7FFF;--accent-dim:rgba(91,127,255,0.1);--pass:#3DD68C;--pass-bg:rgba(61,214,140,0.08);--pass-border:rgba(61,214,140,0.25);--fail:#FF5C5C;--fail-bg:rgba(255,92,92,0.08);--fail-border:rgba(255,92,92,0.25);--notrun-bg:rgba(255,255,255,0.04);--notrun-border:#2A2A2A;--notrun:#555555;--mono:ui-monospace,'SF Mono',Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--r:6px}
+html{font-size:14px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px}
+.pr-tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(91,127,255,0.25);padding:3px 10px;border-radius:20px;letter-spacing:.06em}
+.h-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.h-link{font-size:11px;font-family:var(--mono);color:var(--accent);text-decoration:none}
+.h-link:hover{text-decoration:underline}
+.h-date{font-size:11px;font-family:var(--mono);color:var(--text-3)}
+.main{max-width:1200px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;font-variant-numeric:tabular-nums}
+.n-total{color:var(--text)}.n-notrun{color:var(--notrun)}.n-pass{color:var(--pass)}.n-fail{color:var(--fail)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface-2)}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.card-hint{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.impact-block{padding:0 20px 4px}
+.impact-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);padding:14px 0 10px;border-bottom:1px solid var(--border);margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.impact-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.impact-row{display:grid;grid-template-columns:190px 120px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:start}
+.impact-row:last-child{border-bottom:none}
+.im-module{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+.im-range{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);background:var(--surface-2);border:1px solid var(--border-2);padding:2px 8px;border-radius:3px}
+.im-reason{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.new-row:last-child{border-bottom:none}
+.new-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+.new-text{font-size:12px;color:var(--text-2);line-height:1.55}
+.new-module{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-2);vertical-align:top;line-height:1.55}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.t-id{font-family:var(--mono);font-size:10.5px;color:var(--text-3);white-space:nowrap}
+.t-mod{font-family:var(--mono);font-size:10px;color:var(--accent);display:block;margin-bottom:3px;font-weight:500}
+.t-surface{font-size:12px;font-weight:500;color:var(--text)}
+.steps ol{padding-left:14px}
+.steps li{margin-bottom:2px}
+.status-cell{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none;border:1px solid;transition:opacity .1s,transform .08s;white-space:nowrap}
+.chip:hover{opacity:.85}.chip:active{transform:scale(.95)}
+.chip[data-s="notrun"]{background:var(--notrun-bg);color:var(--notrun);border-color:var(--notrun-border)}
+.chip[data-s="pass"]{background:var(--pass-bg);color:var(--pass);border-color:var(--pass-border)}
+.chip[data-s="fail"]{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-border)}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;justify-content:space-between;font-size:10.5px;font-family:var(--mono);color:var(--text-3)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="pr-tag">PR #4689</div>
+  <div class="h-title">Add tracking for nav bar clicks and user profile</div>
+  <div class="h-right">
+    <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4689" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4689</a>
+    <div class="h-date">2026-07-22 · uni-profile-fe-tracking-master</div>
+  </div>
+</div>
+<div class="main">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num n-total">11</div></div>
+    <div class="stat"><div class="stat-label">Not Run</div><div class="stat-num n-notrun" id="c-notrun">11</div></div>
+    <div class="stat"><div class="stat-label">Pass</div><div class="stat-num n-pass" id="c-pass">0</div></div>
+    <div class="stat"><div class="stat-label">Fail</div><div class="stat-num n-fail" id="c-fail">0</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-head-title">Impact</span></div>
+    
+    <div class="impact-block">
+      <div class="impact-label">Regression</div>
+      
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-005, TC-UPROF-012</span>
+          <span class="im-reason">Sticky nav (click) handler moved from a per-link (click) on each nz-link (which only ever fired for the first rendered link) to a single (nzClick) on nz-anchor that emits the href for every tab. This is a real behavior change, not just instrumentation — verify every nav tab (not only the first) still scrolls to its section and that legacy-anchor deep links still resolve.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-032</span>
+          <span class="im-reason">Beta Menu dropdown visibility changed from a two-way [(nzVisible)] binding to an explicit (nzVisibleChange) handler plus manual keyboard toggling. Verify opening/closing via click, Enter, and Space still works and the menu doesn&#x27;t get stuck open/closed.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-099</span>
+          <span class="im-reason">Regional rep action handlers (onMessageClick, onBookCallClick, onLinkedInClick) were refactored from taking a raw string argument to taking the full rep object. Verify mailto, Book a Call, and LinkedIn links still resolve to the correct rep&#x27;s contact data on the active carousel card.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-056, TC-UPROF-009</span>
+          <span class="im-reason">Scattergram filter apply/reset and axis-switch logic were touched to add tracking hooks and replace string literals with a shared filterType constant map. Verify filter chips (grad year, region, citizenship, course/major) and axis switching still update the chart correctly.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-068</span>
+          <span class="im-reason">toggleCurrency() gained a tracking call after recompute(); verify the currency toggle still switches the displayed cost breakdown between profile and university currency.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-098</span>
+          <span class="im-reason">Testimonials carousel template now tags each card with data-testimonial-id/position and wires an IntersectionObserver for impression tracking. Verify the carousel&#x27;s own prev/next scroll navigation is unaffected by the new observer.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-031</span>
+          <span class="im-reason">Best Opportunities first-fold card&#x27;s (click) handler changed from directly emitting navigateToCourses to routing through a new onBestOpportunitiesClick() wrapper. Verify clicking the card still navigates to Courses &amp; Majors.</span>
+        </div>
+        <div class="impact-row">
+          <span class="im-module">Discovery &amp; Research — University Profile</span>
+          <span class="im-range">TC-UPROF-042</span>
+          <span class="im-reason">University Contact&#x27;s openRepModal() gained a tracking call before modalService.create(). Verify &quot;View all representatives&quot; still opens the Representatives Modal.</span>
+        </div>
+    </div>
+    
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-head-title">Test Plan</span>
+      <span class="card-hint">Click status to update</span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:65px">ID</th>
+            <th style="width:155px">Surface</th>
+            <th>Preconditions</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Data Requirements</th>
+            <th style="width:105px;text-align:center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="t-id">TP-001</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation</span></td>
+          <td>On a University Profile page with all sections present (Overview, Entry Requirements, Cost, Courses, Scholarships, Notes, Student Life).</td>
+          <td><div class="steps"><ol><li>Click each sticky nav tab in order, including tabs other than the first (e.g. Cost, Courses, Student Life).</li><li>Observe scroll position after each click.</li></ol></div></td>
+          <td>Every tab scrolls the page to its corresponding section — not only the first tab. (Previously the per-link click handler only ever bound to the first nz-link.)</td>
+          <td>Any university with data for all profile sections.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-002</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Sticky Side Navigation — legacy anchor deep link</span></td>
+          <td>A University Profile URL with a legacy anchor hash (e.g. #courses).</td>
+          <td><div class="steps"><ol><li>Navigate directly to the University Profile URL with the anchor hash appended.</li><li>Observe initial scroll position.</li></ol></div></td>
+          <td>Page loads scrolled to the section matching the hash, consistent with pre-PR behavior.</td>
+          <td>Any university profile URL with a valid section hash.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-003</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu</span></td>
+          <td>University Profile header with the Beta tag visible.</td>
+          <td><div class="steps"><ol><li>Click the Beta tag to open the menu.</li><li>Click elsewhere to close it.</li><li>Re-open via click, then close/re-open using Enter and Space keys with the tag focused.</li></ol></div></td>
+          <td>Menu opens and closes correctly for every interaction path (click, Enter, Space); no stuck-open or stuck-closed state.</td>
+          <td>None — any University Profile page.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-004</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Header — Beta Menu (Share Feedback / View Previous Version)</span></td>
+          <td>Beta Menu open.</td>
+          <td><div class="steps"><ol><li>Click &quot;Share Feedback&quot;.</li><li>Re-open the menu and click &quot;View Previous Version&quot;.</li></ol></div></td>
+          <td>Share Feedback opens the typeform in a new tab; View Previous Version deep-links to the legacy profile for the current university/student.</td>
+          <td>A student context with a valid university slug.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-005</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Regional Representatives</span></td>
+          <td>A university with regional representatives that have email, phone, LinkedIn, and calendar link populated.</td>
+          <td><div class="steps"><ol><li>On the active rep card, click the email address.</li><li>Click &quot;Message&quot;.</li><li>Click &quot;Book a call&quot; (if calendar_link present).</li><li>Click the LinkedIn row.</li></ol></div></td>
+          <td>Message sets window.location to the correct rep&#x27;s mailto link; Book a Call and LinkedIn open the correct rep&#x27;s calendar/LinkedIn URL in a new tab — using the newly-passed rep object, not a stale/wrong rep.</td>
+          <td>University with 2+ regional reps, so a mismatch between the active card and tracked rep would be visible.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-006</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Filters</span></td>
+          <td>University with scattergram data and filter options for grad year, region, citizenship, and course/major.</td>
+          <td><div class="steps"><ol><li>Apply a Grad Year filter.</li><li>Apply a Region filter.</li><li>Apply a Citizenship filter.</li><li>Enter a value in Course/Major search and commit it (blur or Enter).</li></ol></div></td>
+          <td>Each filter still updates the scattergram&#x27;s plotted points and persists to localStorage as before the refactor from string literals to the SCATTERGRAM_FILTER_TYPE constant map.</td>
+          <td>University with scattergram entries across multiple grad years/regions/citizenships.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-007</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Entry Requirements — Scattergram Axis Switch</span></td>
+          <td>Scattergram visible with default axes.</td>
+          <td><div class="steps"><ol><li>Change the X axis selector to a different test type.</li><li>Change the Y axis selector to a different test type.</li></ol></div></td>
+          <td>Chart redraws with the newly selected axes on both changes.</td>
+          <td>University with data for at least 2 distinct test types on each axis.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-008</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Cost &amp; Financial Aid — Currency Toggle</span></td>
+          <td>University with cost data and a valid currency conversion available (profile currency differs from university currency).</td>
+          <td><div class="steps"><ol><li>Toggle currency from University Currency to Profile Currency.</li><li>Toggle back to University Currency.</li></ol></div></td>
+          <td>Displayed cost figures switch correctly between currencies both directions.</td>
+          <td>Student profile currency different from the university&#x27;s local currency, with a valid conversion rate.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-009</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel</span></td>
+          <td>University with 3+ testimonials.</td>
+          <td><div class="steps"><ol><li>Scroll the testimonials carousel forward and backward using its nav controls.</li><li>Scroll slowly enough to pass multiple cards through the viewport.</li></ol></div></td>
+          <td>Carousel scroll/nav behavior is unchanged by the new data-testimonial-id/position attributes and IntersectionObserver — no visual jank, no broken prev/next state.</td>
+          <td>University with at least 3 Contentful testimonials.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-010</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Best Opportunities First Fold</span></td>
+          <td>Student context, Grade 12, university with a matched course (firstCourse set).</td>
+          <td><div class="steps"><ol><li>Click the Best Opportunities card.</li></ol></div></td>
+          <td>Navigates to / scrolls to the Courses &amp; Majors section, same as before the onBestOpportunitiesClick() wrapper was introduced.</td>
+          <td>Student with course preferences that produce a matched first course.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr>
+        <tr>
+          <td class="t-id">TP-011</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Overview — Contact Information</span></td>
+          <td>University with contact info and representatives configured.</td>
+          <td><div class="steps"><ol><li>Click &quot;View all representatives&quot; on the Contact Information card.</li></ol></div></td>
+          <td>Representatives Modal opens and lists the university&#x27;s representatives.</td>
+          <td>University with at least 1 representative.</td>
+          <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span>Formal TCs authored post-merge via docs-sync → TC maintenance</span>
+      <span>qe-automation · staging.cialfo.sg</span>
+    </div>
+  </div>
+</div>
+<script>
+const C=['notrun','pass','fail'],L={notrun:'NOT RUN',pass:'PASS',fail:'FAIL'};
+function cycle(el){
+  const n=C[(C.indexOf(el.dataset.s)+1)%3];
+  el.dataset.s=n;el.textContent=L[n];
+  const ch=[...document.querySelectorAll('.chip')];
+  document.getElementById('c-notrun').textContent=ch.filter(c=>c.dataset.s==='notrun').length;
+  document.getElementById('c-pass').textContent=ch.filter(c=>c.dataset.s==='pass').length;
+  document.getElementById('c-fail').textContent=ch.filter(c=>c.dataset.s==='fail').length;
+}
+</script>
+</body>
+</html>

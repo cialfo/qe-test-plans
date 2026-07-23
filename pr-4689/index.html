@@ -65,7 +65,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
   <div class="h-title">Add tracking for nav bar clicks and user profile</div>
   <div class="h-right">
     <a class="h-link" href="https://github.com/cialfo/app-cialfo-core-web/pull/4689" target="_blank">↗ cialfo/app-cialfo-core-web/pull/4689</a>
-    <div class="h-date">2026-07-22 · uni-profile-fe-tracking-master</div>
+    <div class="h-date">2026-07-23 · uni-profile-fe-tracking-master</div>
   </div>
 </div>
 <div class="main">
@@ -185,7 +185,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">Student Life — Testimonials Carousel &amp; View Impressions</span></td>
           <td>University with 3+ testimonials, at least one fully out of the initial viewport.</td>
           <td><div class="steps"><ol><li>Load the page and observe the page renders without a JS/console error.</li><li>Scroll the testimonials carousel forward and backward using its nav controls, slowly enough to pass multiple cards through the viewport.</li><li>Switch to a different university profile (same-route uni→uni navigation) and repeat.</li></ol></div></td>
-          <td>The page compiles and renders (see blocker note below) — carousel scroll/nav behavior is unchanged by the new data-testimonial-id/position attributes and IntersectionObserver, no visual jank, no broken prev/next state, and impressions reset per university switch without re-firing for already-seen cards.</td>
+          <td>Carousel scroll/nav behavior is unchanged by the new data-testimonial-id/position attributes and IntersectionObserver, no visual jank, no broken prev/next state, and impressions reset per university switch without re-firing for already-seen cards.</td>
           <td>University with at least 3 Contentful testimonials; a second university to switch to for the reset check.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr>
@@ -218,11 +218,11 @@ tr:hover td{background:rgba(255,255,255,.015)}
         </tr>
         <tr>
           <td class="t-id">TP-013</td>
-          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">BLOCKER — build/compile break in uni-testimonials.component.ts</span></td>
-          <td>PR #4689 at current head (commit c97bf74527).</td>
-          <td><div class="steps"><ol><li>Run `tsc`/the app build against the branch, or load any University Profile page with testimonials in the running app.</li></ol></div></td>
-          <td>This must fail today: `ngOnChanges()` in uni-testimonials.component.ts is missing its closing brace (introduced by the Copilot autofix commit that wrapped the setTimeout in a null-check), so `ngAfterViewInit()` and `ngOnDestroy()` end up nested inside `ngOnChanges()` — a TypeScript syntax/compile error. PR&#x27;s own `eslint` check is already failing and `test`/`baseline` jobs are stuck pending as of this diff. Every other TC in this plan is blocked until this brace is fixed and the branch actually compiles.</td>
-          <td>None — this is a static/compile-time defect, not a data-dependent scenario.</td>
+          <td><span class="t-mod">Discovery &amp; Research — University Profile</span><span class="t-surface">RESOLVED — prior compile break in uni-testimonials.component.ts fixed</span></td>
+          <td>PR #4689 at current head (commit c0c5df1d478ea7c40b77851582645b0568e1a527).</td>
+          <td><div class="steps"><ol><li>Run the app build / `eslint` against the branch, or load any University Profile page with testimonials in the running app.</li></ol></div></td>
+          <td>Branch now compiles cleanly. Commit c0c5df1d restored the closing brace of ngOnChanges() in uni-testimonials.component.ts that a prior rebase onto master had silently dropped (master&#x27;s #4602 debounce version line-merged with this branch&#x27;s testimonials-impression change). eslint on this commit is green (previously failing at c97bf745); test/baseline jobs are running (previously stuck pending behind the syntax error). TP-001–012 are unblocked — all other TCs can now be executed against this head.</td>
+          <td>None — this was a static/compile-time defect, now fixed.</td>
           <td class="status-cell"><span class="chip" data-s="notrun" onclick="cycle(this)">NOT RUN</span></td>
         </tr></tbody>
       </table>
